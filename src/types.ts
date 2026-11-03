@@ -21,6 +21,7 @@ export interface IModuleScanResult {
   moduleNumber: number;
   moduleName: string;
   status: ModuleStatus;
+  enabled?: boolean;
   lastChecked: Date;
   issues: IModuleIssue[];
   metrics?: Record<string, string | number | boolean | string[]>;

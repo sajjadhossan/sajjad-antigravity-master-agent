@@ -41,14 +41,15 @@
   },
   "license": "Apache-2.0",
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onView:antigravityMaster.dashboardView"
   ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "antigravity-master-container",
-          "title": "Antigravity Master",
+          "title": "Sajjad Antigravity Master",
           "icon": "media/icons/activitybar-icon.svg"
         }
       ]
@@ -58,7 +59,7 @@
         {
           "type": "webview",
           "id": "antigravityMaster.dashboardView",
-          "name": "Command Center & Modules 1–50"
+          "name": "Sajjad Master Command Center & Modules 1–50"
         }
       ]
     },

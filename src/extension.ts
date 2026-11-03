@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
   // 3. Register Commands
   registerExtensionCommands(context);
 
-  // 4. Initial Background Module Scan
+  // 4. Immediate Initial Module Scan
   setTimeout(() => {
     ModuleRegistry.getInstance().runFullScan().then(() => {
       dashboardProvider.render();
@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
         statusBar.updateFromReport(lastReport);
       }
     });
-  }, 1000);
+  }, 200);
 
   // 5. Diagnostics listener for self-healing & force-fix lock
   context.subscriptions.push(

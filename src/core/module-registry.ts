@@ -6,6 +6,7 @@ export class ModuleRegistry {
   private static instance: ModuleRegistry;
   private modules: Map<number, IModuleDefinition> = new Map();
   private latestResults: Map<number, IModuleScanResult> = new Map();
+  private disabledModules: Set<number> = new Set();
   private isScanning = false;
 
   private constructor() {
@@ -23,6 +24,16 @@ export class ModuleRegistry {
     const list = createAllModules();
     for (const mod of list) {
       this.modules.set(mod.number, mod);
+      // Pre-seed initial results so the UI is immediately populated with all 50 modules
+      this.latestResults.set(mod.number, {
+        moduleNumber: mod.number,
+        moduleName: mod.name,
+        status: ModuleStatus.WORKING,
+        enabled: true,
+        lastChecked: new Date(),
+        issues: [],
+        metrics: { initialized: true },
+      });
     }
   }
 
@@ -42,6 +53,84 @@ export class ModuleRegistry {
     return Array.from(this.latestResults.values()).sort((a, b) => a.moduleNumber - b.moduleNumber);
   }
 
+  public isModuleEnabled(number: number): boolean {
+    return !this.disabledModules.has(number);
+  }
+
+  public async toggleModule(number: number): Promise<boolean> {
+    const mod = this.modules.get(number);
+    if (!mod) {
+      return false;
+    }
+
+    if (this.disabledModules.has(number)) {
+      this.disabledModules.delete(number);
+      await this.scanSingleModule(number);
+      return true; // Now enabled
+    } else {
+      this.disabledModules.add(number);
+      this.latestResults.set(number, {
+        moduleNumber: mod.number,
+        moduleName: mod.name,
+        status: ModuleStatus.DISABLED,
+        enabled: false,
+        lastChecked: new Date(),
+        issues: [],
+        degradationNote: 'Disabled by user toggle switch.',
+      });
+      return false; // Now disabled
+    }
+  }
+
+  public async scanSingleModule(number: number): Promise<IModuleScanResult | undefined> {
+    const mod = this.modules.get(number);
+    if (!mod) {
+      return undefined;
+    }
+
+    if (this.disabledModules.has(number)) {
+      const res: IModuleScanResult = {
+        moduleNumber: mod.number,
+        moduleName: mod.name,
+        status: ModuleStatus.DISABLED,
+        enabled: false,
+        lastChecked: new Date(),
+        issues: [],
+        degradationNote: 'Module is currently toggled OFF.',
+      };
+      this.latestResults.set(number, res);
+      return res;
+    }
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    const rootPath = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined;
+
+    try {
+      const res = await mod.executeScan(rootPath);
+      res.enabled = true;
+      this.latestResults.set(number, res);
+      return res;
+    } catch (err: any) {
+      const fallbackResult: IModuleScanResult = {
+        moduleNumber: mod.number,
+        moduleName: mod.name,
+        status: ModuleStatus.ERROR,
+        enabled: true,
+        lastChecked: new Date(),
+        issues: [
+          {
+            id: `MOD-ERR-${mod.number}`,
+            moduleNumber: mod.number,
+            message: `Scan failed: ${err.message || String(err)}`,
+            severity: 'HIGH',
+          },
+        ],
+      };
+      this.latestResults.set(number, fallbackResult);
+      return fallbackResult;
+    }
+  }
+
   public async runFullScan(): Promise<IModuleScanResult[]> {
     if (this.isScanning) {
       return this.getAllResults();
@@ -49,34 +138,7 @@ export class ModuleRegistry {
     this.isScanning = true;
 
     try {
-      const workspaceFolders = vscode.workspace.workspaceFolders;
-      const rootPath = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined;
-
-      const promises = Array.from(this.modules.values()).map(async (mod) => {
-        try {
-          const res = await mod.executeScan(rootPath);
-          this.latestResults.set(mod.number, res);
-          return res;
-        } catch (err: any) {
-          const fallbackResult: IModuleScanResult = {
-            moduleNumber: mod.number,
-            moduleName: mod.name,
-            status: ModuleStatus.ERROR,
-            lastChecked: new Date(),
-            issues: [
-              {
-                id: `MOD-ERR-${mod.number}`,
-                moduleNumber: mod.number,
-                message: `Module execution failed: ${err.message || String(err)}`,
-                severity: 'HIGH',
-              },
-            ],
-          };
-          this.latestResults.set(mod.number, fallbackResult);
-          return fallbackResult;
-        }
-      });
-
+      const promises = Array.from(this.modules.keys()).map((num) => this.scanSingleModule(num));
       await Promise.all(promises);
       return this.getAllResults();
     } finally {

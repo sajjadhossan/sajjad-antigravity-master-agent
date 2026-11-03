@@ -49,8 +49,13 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
         case 'runModule':
           const mod = ModuleRegistry.getInstance().getModule(message.moduleNumber);
           if (mod) {
-            const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            await mod.executeScan(root);
+            await ModuleRegistry.getInstance().scanSingleModule(message.moduleNumber);
+            this.render();
+          }
+          break;
+        case 'toggleModule':
+          if (typeof message.moduleNumber === 'number') {
+            await ModuleRegistry.getInstance().toggleModule(message.moduleNumber);
             this.render();
           }
           break;
