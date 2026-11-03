@@ -1,0 +1,23 @@
+{
+  "templateId": "diagnostic-center",
+  "name": "Diagnostic Center & Pathology Lab",
+  "industry": "Healthcare & Diagnostics",
+  "rules": [
+    {
+      "id": "RULE-DIAG-01",
+      "name": "Patient Test Barcode Tracking",
+      "severity": "CRITICAL",
+      "description": "Every lab specimen must be linked with a unique barcode/QR code.",
+      "pattern": "generateSpecimenBarcode",
+      "recommendation": "Assign a unique specimen barcode matching the patient test requisition."
+    },
+    {
+      "id": "RULE-DIAG-02",
+      "name": "Doctor Verification Before Release",
+      "severity": "CRITICAL",
+      "description": "Lab test results cannot be printed or emailed without pathologist digital signoff.",
+      "pattern": "approveLabReport",
+      "recommendation": "Require doctor/pathologist credentials and timestamp before marking report as ready."
+    }
+  ]
+}

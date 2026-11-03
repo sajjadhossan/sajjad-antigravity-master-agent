@@ -1,0 +1,23 @@
+{
+  "templateId": "crm",
+  "name": "Enterprise CRM & Lead Engine",
+  "industry": "Sales & Client Management",
+  "rules": [
+    {
+      "id": "RULE-CRM-01",
+      "name": "Customer Duplicate Detection",
+      "severity": "HIGH",
+      "description": "Verify customer phone and email uniqueness before creating new lead.",
+      "pattern": "checkDuplicateContact",
+      "recommendation": "Perform exact phone matching across tenant contacts to prevent duplicates."
+    },
+    {
+      "id": "RULE-CRM-02",
+      "name": "Audit Trail on Contact Assignment",
+      "severity": "MEDIUM",
+      "description": "Log sales agent assignment and reassignment events with timestamp.",
+      "pattern": "assignLead",
+      "recommendation": "Record agent reassignment history for performance tracking and transparency."
+    }
+  ]
+}

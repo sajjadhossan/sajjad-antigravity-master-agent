@@ -1,0 +1,31 @@
+{
+  "templateId": "cooperative-society",
+  "name": "Cooperative Society / সমবায় সমিতি",
+  "industry": "Samity, Microfinance & Club",
+  "rules": [
+    {
+      "id": "RULE-SAMITY-01",
+      "name": "Double Entry Ledger Verification",
+      "severity": "CRITICAL",
+      "description": "Every member deposit or loan repayment must create balanced debit and credit ledger rows.",
+      "pattern": "recordDeposit|repayLoan",
+      "recommendation": "Debit cash/bank account and credit member savings/share capital atomically."
+    },
+    {
+      "id": "RULE-SAMITY-02",
+      "name": "Member Passbook Audit Trail",
+      "severity": "HIGH",
+      "description": "Never update historical ledger balances without generating an immutable audit record.",
+      "pattern": "updatePassbook",
+      "recommendation": "All passbook adjustments require supervisor approval and an audit trail entry."
+    },
+    {
+      "id": "RULE-SAMITY-03",
+      "name": "Bengali Currency Formatting",
+      "severity": "MEDIUM",
+      "description": "Receipts and balance summaries must display amounts in BDT (৳) with Bangla numeral option.",
+      "pattern": "formatCurrency\\(",
+      "recommendation": "Use locale-aware BDT formatting with optional Bangla numerals (১২,৩৪৫ ৳)."
+    }
+  ]
+}

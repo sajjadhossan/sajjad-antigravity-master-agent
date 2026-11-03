@@ -1,0 +1,338 @@
+{
+  "name": "antigravity-master-agent",
+  "displayName": "Antigravity Master Agent, Rules Engine & Multi-Platform APK Guard",
+  "description": "50-in-1 enterprise-grade developer tooling, AI rules engine, multi-platform APK pre-flight guard, GitHub CI/CD automation & release gate.",
+  "version": "8.0.0",
+  "publisher": "antigravity-technologies",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters",
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "antigravity",
+    "apk-guard",
+    "rules-engine",
+    "release-gate",
+    "flutter",
+    "android",
+    "ci-cd",
+    "zero-demo",
+    "bengali",
+    "ai-agent"
+  ],
+  "main": "./dist/extension.js",
+  "icon": "media/icons/shield-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antigravity-technologies/antigravity-master-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antigravity-technologies/antigravity-master-agent/issues"
+  },
+  "license": "Apache-2.0",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "antigravity-master-container",
+          "title": "Antigravity Master",
+          "icon": "media/icons/activitybar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "antigravity-master-container": [
+        {
+          "type": "webview",
+          "id": "antigravityMaster.dashboardView",
+          "name": "Command Center & Modules 1–50"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "antigravityMaster.openDashboard",
+        "title": "Antigravity: Open Command Center Dashboard",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.runAllChecks",
+        "title": "Antigravity: Run Verification Across All 50 Modules",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.forceVerifyAndPrepareRelease",
+        "title": "Antigravity: Force-Verify 1–50 & Prepare Release Gate",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.runAiPlanner",
+        "title": "Antigravity: Run AI Interactive Planner & Intent Breakdown",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.approvePlan",
+        "title": "Antigravity: Approve AI Execution Plan",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.rejectPlan",
+        "title": "Antigravity: Reject / Request AI Plan Revision",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.manageRules",
+        "title": "Antigravity: Manage Rules (Global & Project)",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.createProjectRules",
+        "title": "Antigravity: Initialize .project-rules.json",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.applyRuleTemplate",
+        "title": "Antigravity: Apply Industry Rule Template",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.scanAndroidManifest",
+        "title": "Antigravity: Scan AndroidManifest & Permissions",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.validateSigning",
+        "title": "Antigravity: Validate Android Signing Configuration",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.bumpVersion",
+        "title": "Antigravity: Bump Version Across Multi-Platforms",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.generateWorkflows",
+        "title": "Antigravity: Generate GitHub Actions CI/CD Workflows",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.monitorGitHubActions",
+        "title": "Antigravity: Monitor Live GitHub Actions Runs",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.generateApkQr",
+        "title": "Antigravity: Generate Release APK Download QR",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.runBackupTest",
+        "title": "Antigravity: Run Automated Backup Test Simulation",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.validateRestore",
+        "title": "Antigravity: Validate Recovery Checksum & Schema",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.scanSecrets",
+        "title": "Antigravity: Deep Scan Secrets & Leak Prevention",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.scanDependencies",
+        "title": "Antigravity: Scan Dependency CVEs & Lockfiles",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.generateReleaseNotes",
+        "title": "Antigravity: Generate Bilingual Release Notes (EN/BN)",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.createGitHubRelease",
+        "title": "Antigravity: Create GitHub Release with Artifacts",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.rollbackRelease",
+        "title": "Antigravity: Rollback / Incident Recovery Center",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.runSelfDiagnostic",
+        "title": "Antigravity: Run Extension Full Self-Diagnostic",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.exportDiagnosticReport",
+        "title": "Antigravity: Export Redacted Diagnostic Report",
+        "category": "Antigravity Master"
+      }
+    ],
+    "configuration": {
+      "title": "Antigravity Master Agent",
+      "properties": {
+        "antigravityMaster.autoAccept.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable smart auto-approval for safe file edits and diagnostics."
+        },
+        "antigravityMaster.autoAccept.allowTerminal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow terminal auto-approval. Defaults to OFF for safety."
+        },
+        "antigravityMaster.autoAccept.maxRetries": {
+          "type": "number",
+          "default": 3,
+          "description": "Maximum consecutive retries before pausing."
+        },
+        "antigravityMaster.forceFixLock.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Lock delivery/push until critical diagnostics are resolved."
+        },
+        "antigravityMaster.releaseGate.blockOnWarnings": {
+          "type": "boolean",
+          "default": false,
+          "description": "Block release when warnings exist (Critical errors always block)."
+        },
+        "antigravityMaster.rules.globalRulesPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to global rules JSON. Blank uses extension default."
+        },
+        "antigravityMaster.rules.projectRulesPath": {
+          "type": "string",
+          "default": ".project-rules.json",
+          "description": "Relative workspace path for project rules."
+        },
+        "antigravityMaster.android.manifestPath": {
+          "type": "string",
+          "default": "android/app/src/main/AndroidManifest.xml",
+          "description": "Path to primary AndroidManifest.xml."
+        },
+        "antigravityMaster.android.signingKeyPath": {
+          "type": "string",
+          "default": "android/key.properties",
+          "description": "Path to signing properties file."
+        },
+        "antigravityMaster.github.owner": {
+          "type": "string",
+          "default": "",
+          "description": "GitHub repository owner."
+        },
+        "antigravityMaster.github.repo": {
+          "type": "string",
+          "default": "",
+          "description": "GitHub repository name."
+        },
+        "antigravityMaster.github.workflowMonitoring": {
+          "type": "boolean",
+          "default": true,
+          "description": "Periodically poll GitHub Actions status."
+        },
+        "antigravityMaster.qr.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dynamic QR code generation for builds and URLs."
+        },
+        "antigravityMaster.qr.defaultSize": {
+          "type": "number",
+          "default": 256,
+          "description": "Default QR dimension in pixels."
+        },
+        "antigravityMaster.backup.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Verify backup pipelines and schedule pre-release backups."
+        },
+        "antigravityMaster.backup.cloudProvider": {
+          "type": "string",
+          "enum": ["local", "s3", "gcs", "azure", "supabase"],
+          "default": "local",
+          "description": "Configured backup storage provider."
+        },
+        "antigravityMaster.backup.schedule": {
+          "type": "string",
+          "default": "0 2 * * *",
+          "description": "Backup cron expression."
+        },
+        "antigravityMaster.security.blockCriticalVulnerabilities": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block release when known critical CVEs or hardcoded secrets are detected."
+        },
+        "antigravityMaster.i18n.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["en", "bn"],
+          "description": "Supported UI languages."
+        },
+        "antigravityMaster.ai.provider": {
+          "type": "string",
+          "enum": ["gemini", "openai", "anthropic", "custom"],
+          "default": "gemini",
+          "description": "Configured AI provider for planner & self-healing."
+        },
+        "antigravityMaster.ai.model": {
+          "type": "string",
+          "default": "gemini-2.5-pro",
+          "description": "AI model identifier."
+        },
+        "antigravityMaster.ai.maxContextFiles": {
+          "type": "number",
+          "default": 12,
+          "description": "Maximum relevant files to include in AI planning context."
+        },
+        "antigravityMaster.telemetry.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Anonymous telemetry (strictly opt-in, disabled by default)."
+        },
+        "antigravityMaster.ui.language": {
+          "type": "string",
+          "enum": ["auto", "en", "bn"],
+          "default": "auto",
+          "description": "Dashboard interface language."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./dist/tests/runTests.js",
+    "lint": "eslint src --ext ts",
+    "package": "node esbuild.js --production",
+    "build": "npm run package",
+    "typecheck": "tsc --noEmit",
+    "vsce:package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.2",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
+  }
+}

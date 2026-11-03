@@ -1,0 +1,52 @@
+{
+  "version": "8.0.0",
+  "name": "Antigravity Global Universal Rules",
+  "description": "Enterprise universal rules enforced across all platforms (Zero-Demo, No Raw Float Currency, Mandatory Tenant ID, Soft Delete, BDT/Asia/Dhaka defaults).",
+  "rules": [
+    {
+      "id": "RULE-GLOBAL-01",
+      "name": "Zero Placeholder Code",
+      "category": "ZeroDemo",
+      "severity": "CRITICAL",
+      "description": "Prevent production functions with empty bodies or TODO placeholder comments.",
+      "pattern": "(\\/\\/\\s*TODO:?\\s*implement later|throw\\s+UnimplementedError\\(\\))",
+      "recommendation": "Implement complete business logic with error handling before release."
+    },
+    {
+      "id": "RULE-GLOBAL-02",
+      "name": "Monetary Float Prevention",
+      "category": "Financial",
+      "severity": "CRITICAL",
+      "description": "Never calculate financial balances or invoices using native double/float.",
+      "pattern": "(double\\s+(price|amount|balance|total|fee)|float\\s+(price|amount|balance))",
+      "recommendation": "Use Decimal, BigDecimal, or integer minor units (paisa/cents)."
+    },
+    {
+      "id": "RULE-GLOBAL-03",
+      "name": "Multi-Tenant Isolation",
+      "category": "Architecture",
+      "severity": "CRITICAL",
+      "description": "Every database query on shared tables must filter by tenant_id / organization_id.",
+      "pattern": "SELECT\\s+.+\\s+FROM\\s+(members|orders|invoices|deposits|users)\\s+WHERE\\s+(?!.*tenant_id)",
+      "recommendation": "Append 'AND tenant_id = :tenantId' to prevent cross-tenant data leaks."
+    },
+    {
+      "id": "RULE-GLOBAL-04",
+      "name": "Platform Safe Imports",
+      "category": "CrossPlatform",
+      "severity": "HIGH",
+      "description": "Do not import dart:io or win32 APIs directly in shared web/mobile libraries.",
+      "pattern": "import\\s+['\"]dart:io['\"];",
+      "recommendation": "Use conditional imports or universal_io to support Web and Desktop targets."
+    },
+    {
+      "id": "RULE-GLOBAL-05",
+      "name": "Hardcoded Secret Prevention",
+      "category": "Security",
+      "severity": "CRITICAL",
+      "description": "Detect exposed API keys, private tokens, or hardcoded passwords.",
+      "pattern": "(AIza[0-9A-Za-z-_]{35}|ghp_[0-9a-zA-Z]{36}|-----BEGIN PRIVATE KEY-----|sk-[a-zA-Z0-9]{32,})",
+      "recommendation": "Store sensitive keys securely in environment variables or SecretStorage."
+    }
+  ]
+}

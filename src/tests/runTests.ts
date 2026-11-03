@@ -1,0 +1,21 @@
+import { runSecurityVaultTests } from './security-vault.test';
+import { runModulesTests } from './modules.test';
+import { runReleaseGateTests } from './release-gate.test';
+
+async function main() {
+  console.log('====================================================');
+  console.log('Antigravity Master Agent Test Runner');
+  console.log('====================================================');
+
+  try {
+    runSecurityVaultTests();
+    runModulesTests();
+    runReleaseGateTests();
+    console.log('\n✅ ALL TEST SUITES PASSED SUCCESSFULLY (0 FAILURES).');
+  } catch (err) {
+    console.error('\n❌ TEST SUITE FAILURE:', err);
+    process.exit(1);
+  }
+}
+
+main();

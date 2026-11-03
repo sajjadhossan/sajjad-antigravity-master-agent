@@ -1,0 +1,41 @@
+name: Security Audit & Secret Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 4 * * 1'
+
+jobs:
+  audit:
+    name: NPM Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run NPM Audit
+        run: npm audit --audit-level=high
+
+  secret-scan:
+    name: Scan Secrets & Leaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Git History for Leaked Credentials
+        run: |
+          echo "Scanning for accidental secret commits..."
+          ! git log -p -S"BEGIN PRIVATE KEY" -- .
+          ! git log -p -S"AIzaSy" -- .
+          ! git log -p -S"ghp_" -- .

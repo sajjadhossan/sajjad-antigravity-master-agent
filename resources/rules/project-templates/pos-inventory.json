@@ -1,0 +1,31 @@
+{
+  "templateId": "pos-inventory",
+  "name": "Retail POS & Inventory Master",
+  "industry": "Retail & Wholesale",
+  "rules": [
+    {
+      "id": "RULE-POS-01",
+      "name": "Atomic Stock Deduction",
+      "severity": "CRITICAL",
+      "description": "Stock deduction must be executed inside a database transaction alongside sale creation.",
+      "pattern": "updateStock\\(",
+      "recommendation": "Wrap sale creation and inventory decrement inside a database transaction."
+    },
+    {
+      "id": "RULE-POS-02",
+      "name": "Thermal Printer Fallback",
+      "severity": "HIGH",
+      "description": "Receipt printing must support both 58mm/80mm ESC/POS and PDF sharing fallback.",
+      "pattern": "printReceipt\\(",
+      "recommendation": "Check printer connectivity and fallback to PDF generation when disconnected."
+    },
+    {
+      "id": "RULE-POS-03",
+      "name": "Invoice Verification QR",
+      "severity": "HIGH",
+      "description": "Printed receipts must embed a valid digital verification QR code.",
+      "pattern": "QrImageView|generateQrCode",
+      "recommendation": "Render verification QR code holding invoice number, timestamp, and signature hash."
+    }
+  ]
+}

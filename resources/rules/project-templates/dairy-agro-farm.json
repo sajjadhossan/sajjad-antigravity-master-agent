@@ -1,0 +1,23 @@
+{
+  "templateId": "dairy-agro-farm",
+  "name": "Dairy & Agro Farm Management",
+  "industry": "Agriculture & Livestock",
+  "rules": [
+    {
+      "id": "RULE-AGRO-01",
+      "name": "Daily Yield Validation",
+      "severity": "HIGH",
+      "description": "Daily milk yield, collection volume, or feed weight must be recorded with positive numbers.",
+      "pattern": "recordMilkYield|recordFeed",
+      "recommendation": "Enforce positive volume constraints and check date/shift consistency."
+    },
+    {
+      "id": "RULE-AGRO-02",
+      "name": "Offline Milk Collection Sync",
+      "severity": "CRITICAL",
+      "description": "Field milk collection from farmers must support offline mode with local queuing.",
+      "pattern": "collectMilk|saveCollectionDraft",
+      "recommendation": "Queue offline collection records and sync with server once internet connectivity is restored."
+    }
+  ]
+}

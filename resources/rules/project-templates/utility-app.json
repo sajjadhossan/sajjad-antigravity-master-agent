@@ -1,0 +1,23 @@
+{
+  "templateId": "utility-app",
+  "name": "Utility Billing & Meter Management",
+  "industry": "Utilities & Services",
+  "rules": [
+    {
+      "id": "RULE-UTIL-01",
+      "name": "Meter Reading Monotonicity",
+      "severity": "CRITICAL",
+      "description": "Current meter reading must be greater than or equal to previous reading.",
+      "pattern": "recordMeterReading",
+      "recommendation": "Reject readings smaller than previous billing cycle unless meter reset is authenticated."
+    },
+    {
+      "id": "RULE-UTIL-02",
+      "name": "Bill Calculation Due Date",
+      "severity": "HIGH",
+      "description": "Ensure penalty/late fees are strictly computed only after payment due date passes.",
+      "pattern": "calculateLateFee",
+      "recommendation": "Check invoice dueDate against current payment timestamp using UTC/Dhaka timezone."
+    }
+  ]
+}
