@@ -28,7 +28,7 @@ interface ILocaleStrings {
 }
 
 const enStrings: ILocaleStrings = {
-  commandCenterTitle: 'Antigravity Master Command Center',
+  commandCenterTitle: 'Sajjad Antigravity Master Command Center',
   forceVerifyBtn: '🛡️ Force-Verify 1–50 & Prepare Release',
   modulesTab: 'Dashboard & Live Status',
   plannerTab: 'AI Intent & Planner',
@@ -53,7 +53,7 @@ const enStrings: ILocaleStrings = {
 };
 
 const bnStrings: ILocaleStrings = {
-  commandCenterTitle: 'অ্যান্টিগ্র্যাভিটি মাস্টার কমান্ড সেন্টার',
+  commandCenterTitle: 'সাজ্জাদ অ্যান্টিগ্র্যাভিটি মাস্টার কমান্ড সেন্টার',
   forceVerifyBtn: '🛡️ ৫০টি মডিউল যাচাই ও রিলিজ প্রস্তুত করুন',
   modulesTab: 'ড্যাশবোর্ড ও লাইভ স্ট্যাটাস',
   plannerTab: 'এআই ইনটেন্ট ও প্ল্যানার',

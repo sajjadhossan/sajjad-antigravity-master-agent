@@ -264,7 +264,7 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
 </head>
 <body>
   <div class="header">
-    <h2>🛡️ Antigravity Master <span>v8.0.0</span></h2>
+    <h2>🛡️ Sajjad Antigravity Master <span>v8.0.0</span></h2>
     <div class="header-actions">
       <button class="btn-sm" onclick="toggleLang()">${lang === 'bn' ? 'English' : 'বাংলা'}</button>
       <button class="btn-sm" onclick="openSettings()">⚙️</button>

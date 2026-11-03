@@ -1,9 +1,13 @@
 {
-  "name": "antigravity-master-agent",
-  "displayName": "Antigravity Master Agent, Rules Engine & Multi-Platform APK Guard",
-  "description": "50-in-1 enterprise-grade developer tooling, AI rules engine, multi-platform APK pre-flight guard, GitHub CI/CD automation & release gate.",
+  "name": "sajjad-antigravity-master-agent",
+  "displayName": "Sajjad Antigravity Master Agent & Multi-Platform APK Guard",
+  "description": "50-in-1 enterprise-grade developer tooling, AI rules engine, multi-platform APK pre-flight guard & GitHub CI/CD automation by Sajjad Hossan.",
   "version": "8.0.0",
-  "publisher": "antigravity-technologies",
+  "publisher": "sajjadhossan",
+  "author": {
+    "name": "Sajjad Hossan",
+    "url": "https://github.com/sajjadhossan"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -30,10 +34,10 @@
   "icon": "media/icons/shield-icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/antigravity-technologies/antigravity-master-agent.git"
+    "url": "https://github.com/sajjadhossan/sajjad-antigravity-master-agent.git"
   },
   "bugs": {
-    "url": "https://github.com/antigravity-technologies/antigravity-master-agent/issues"
+    "url": "https://github.com/sajjadhossan/sajjad-antigravity-master-agent/issues"
   },
   "license": "Apache-2.0",
   "activationEvents": [

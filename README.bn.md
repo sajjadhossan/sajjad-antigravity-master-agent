@@ -1,11 +1,12 @@
-# অ্যান্টিগ্র্যাভিটি মাস্টার এজেন্ট, রুলস ইঞ্জিন এবং মাল্টি-প্ল্যাটফর্ম এপিকে গার্ড
+# সাজ্জাদ অ্যান্টিগ্র্যাভিটি মাস্টার এজেন্ট ও মাল্টি-প্ল্যাটফর্ম এপিকে গার্ড
 
-[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/antigravity-technologies/antigravity-master-agent)
+[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/sajjadhossan/sajjad-antigravity-master-agent)
+[![Author](https://img.shields.io/badge/author-Sajjad%20Hossan-orange.svg)](https://github.com/sajjadhossan)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![50-in-1](https://img.shields.io/badge/modules-50--in--1-purple.svg)](docs/MODULES.md)
 [![Zero-Demo](https://img.shields.io/badge/zero--demo-enforced-brightgreen.svg)](docs/RULES.md)
 
-**ভিএস কোড এবং অ্যান্টিগ্র্যাভিটি আইডিই-এর জন্য আলটিমেট ৫০-ইন-১ এন্টারপ্রাইজ ডেভেলপার প্ল্যাটফর্ম।**
+**ভিএস কোড এবং অ্যান্টিগ্র্যাভিটি আইডিই-এর জন্য সাজ্জাদ হোসেনের আলটিমেট ৫০-ইন-১ এন্টারপ্রাইজ ডেভেলপার প্ল্যাটফর্ম।**
 
 স্ট্যাটিক অ্যানালাইসিস, এআই ইনটেন্ট প্ল্যানিং, কাস্টম রুলস এনফোর্সমেন্ট, অ্যান্ড্রয়েড এপিকে প্রি-ফ্লাইট ভ্যালিডেশন, ৪-ডিভাইস সিঙ্ক অডিট, গিটহাব অ্যাকশনস অটোমেশন এবং জিরো-ডেমো রিলিজ গেট একত্রিত করা হয়েছে একটি একক এক্সটেনশনে।
 
@@ -27,7 +28,7 @@
 ## 📦 ইনস্টলেশন পদ্ধতি
 
 ```bash
-code --install-extension ./antigravity-master-agent-8.0.0.vsix
+code --install-extension ./sajjad-antigravity-master-agent-8.0.0.vsix
 ```
 
 ## 🛠️ দ্রুত শুরু করুন

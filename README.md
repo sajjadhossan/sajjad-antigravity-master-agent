@@ -1,27 +1,12 @@
-# Antigravity Master Agent, Rules Engine & Multi-Platform APK Guard
+# Sajjad Antigravity Master Agent & Multi-Platform APK Guard
 
-[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/antigravity-technologies/antigravity-master-agent)
+[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/sajjadhossan/sajjad-antigravity-master-agent)
+[![Author](https://img.shields.io/badge/author-Sajjad%20Hossan-orange.svg)](https://github.com/sajjadhossan)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![50-in-1](https://img.shields.io/badge/modules-50--in--1-purple.svg)](docs/MODULES.md)
 [![Zero-Demo](https://img.shields.io/badge/zero--demo-enforced-brightgreen.svg)](docs/RULES.md)
 
-**The Ultimate All-in-One Enterprise Developer Suite for VS Code and Antigravity IDE.**
-
-Consolidates static analysis, AI intent planning, dynamic rules enforcement, Android APK pre-flight verification, 4-device cross-platform synchronization, GitHub Actions automation, and zero-demo release gates into a single zero-latency extension.
-
----
-
-## 🚀 Key Features
-
-- **50 Unified Modules (1–50)**: Zero mock/placeholder logic. Real implementations or explicit graceful degradation reporting.
-- **Activity Bar & Webview Command Center**: 9 specialized tabs with a searchable, filterable 50-module live grid.
-- **Post-Coding Force-Fix Lock**: Blocks release and PR submission until compiler, lint, security, and rule diagnostics drop to 0 blockers.
-- **Android APK Pre-Flight Inspector**: Scans `<uses-permission>`, `.gitignore` coverage, ProGuard rules, version parity, and signing credentials.
-- **Dynamic Rules Engine**: Supports global rules, workspace-level `.project-rules.json`, and pre-configured industry templates (POS, Samity, Dairy Agro, Diagnostic, CRM).
-- **Financial & Double-Entry Ledger Auditor**: Rejects raw floating-point calculations for currency balances and invoices.
-- **Destructive Command Shield**: Blocks dangerous terminal commands (`rm -rf /`, `mkfs`, force-push to main, schema drops) without interactive confirmation.
-- **Secret & Drift Prevention**: Automated masking and SecretStorage integration for API tokens and passwords.
-- **Bilingual Interface**: Seamlessly toggles between English and Bengali (বাংলা).
+**The Ultimate All-in-One Enterprise Developer Suite for VS Code and Antigravity IDE by Sajjad Hossan.**
 
 ---
 
@@ -29,11 +14,11 @@ Consolidates static analysis, AI intent planning, dynamic rules enforcement, And
 
 ### From VSIX Package:
 ```bash
-code --install-extension ./antigravity-master-agent-8.0.0.vsix
+code --install-extension ./sajjad-antigravity-master-agent-8.0.0.vsix
 ```
 
 ### From GitHub Releases:
-Download the latest `antigravity-master-agent-8.0.0.vsix` and its `.sha256` checksum from [Releases](https://github.com/antigravity-technologies/antigravity-master-agent/releases).
+Download the latest `sajjad-antigravity-master-agent-8.0.0.vsix` and its `.sha256` checksum from [Releases](https://github.com/sajjadhossan/sajjad-antigravity-master-agent/releases).
 
 ---
 
