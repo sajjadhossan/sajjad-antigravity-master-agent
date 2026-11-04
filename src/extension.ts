@@ -626,13 +626,75 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   // Command: createGitHubRelease
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.createGitHubRelease', async () => {
-      const confirmed = await vscode.window.showWarningMessage(
-        'Are you sure you want to trigger GitHub Release? Ensure Release Gate is PASSED.',
-        'Yes, Create Release',
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
+      const report = await ReleaseGateService.getInstance().evaluateRelease();
+      if (report.isLocked) {
+        vscode.window.showErrorMessage(
+          `🛡️ Cannot create GitHub Release: Release Gate is BLOCKED with ${report.blockerCount} critical blockers.`,
+          'Review Blocker Issues'
+        ).then(choice => {
+          if (choice === 'Review Blocker Issues') {
+            vscode.commands.executeCommand('antigravityMaster.openDashboard');
+          }
+        });
+        return;
+      }
+
+      // Read current version from package.json
+      let currentVersion = '8.0.0';
+      const pkgPath = path.join(root, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          currentVersion = pkg.version || '8.0.0';
+        } catch (e) {}
+      }
+
+      // Propose next minor version
+      const parts = currentVersion.split('.').map(p => parseInt(p, 10) || 0);
+      const nextSuggested = `${parts[0]}.${parts[1] + 1}.0`;
+
+      const nextVer = await vscode.window.showInputBox({
+        prompt: `Current version is ${currentVersion}. Enter new version for GitHub Release & multi-platform sync:`,
+        value: nextSuggested,
+        validateInput: val => (/^\d+\.\d+\.\d+$/.test(val) ? null : 'Version must be semantic (e.g., 8.1.0)'),
+      });
+
+      if (!nextVer) {
+        return;
+      }
+
+      const confirmed = await vscode.window.showInformationMessage(
+        `Bump version to ${nextVer} across package.json, pubspec.yaml, android gradle, and prepare tag 'v${nextVer}'?`,
+        'Confirm & Bump Version',
         'Cancel'
       );
-      if (confirmed === 'Yes, Create Release') {
-        vscode.window.showInformationMessage('Tag push v8.0.0 prepared for release.yml dispatch.');
+
+      if (confirmed === 'Confirm & Bump Version') {
+        const updated = await AndroidPreflightService.getInstance().bumpVersion(root, nextVer);
+        AuditTrailService.getInstance().logEvent(
+          root,
+          'GITHUB_RELEASE_VERSION_BUMP',
+          'VERSIONING',
+          'SUCCESS',
+          { previousVersion: currentVersion, releaseVersion: nextVer, filesUpdated: updated.length }
+        );
+
+        vscode.window.showInformationMessage(
+          `🚀 Synchronized version ${nextVer} across ${updated.length} files. Tag 'v${nextVer}' is ready for GitHub release!`,
+          'Push Tag to GitHub'
+        ).then(choice => {
+          if (choice === 'Push Tag to GitHub') {
+            const terminal = vscode.window.createTerminal('Antigravity Release');
+            terminal.show();
+            terminal.sendText(`git commit -am "chore(release): bump version to ${nextVer}" && git tag "v${nextVer}" && git push origin main --tags`);
+          }
+        });
       }
     })
   );

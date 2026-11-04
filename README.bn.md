@@ -1,6 +1,6 @@
 # সাজ্জাদ অ্যান্টিগ্র্যাভিটি মাস্টার এজেন্ট ও মাল্টি-প্ল্যাটফর্ম এপিকে গার্ড
 
-[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/sajjadhossan/sajjad-antigravity-master-agent)
+[![Version](https://img.shields.io/badge/version-v8.1.0-blue.svg)](https://github.com/sajjadhossan/sajjad-antigravity-master-agent)
 [![Author](https://img.shields.io/badge/author-Sajjad%20Hossan-orange.svg)](https://github.com/sajjadhossan)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![50-in-1](https://img.shields.io/badge/modules-50--in--1-purple.svg)](docs/MODULES.md)
@@ -39,12 +39,12 @@
 
 ### লোকাল VSIX প্যাকেজ থেকে:
 ```bash
-code --install-extension ./sajjad-antigravity-master-agent-8.0.0.vsix
+code --install-extension ./sajjad-antigravity-master-agent-8.1.0.vsix
 ```
 
 ### ইন্টিগ্রিটি যাচাইকরণ:
 ```powershell
-Get-FileHash -Algorithm SHA256 .\sajjad-antigravity-master-agent-8.0.0.vsix
+Get-FileHash -Algorithm SHA256 .\sajjad-antigravity-master-agent-8.1.0.vsix
 ```
 
 ---

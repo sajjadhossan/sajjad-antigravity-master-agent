@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "latestVersion": "8.1.0",
+    "minimumSupportedVersion": "8.0.0",
+    "versionCode": 80100,
+    "updatedAt": "2026-11-04T07:21:19.074Z",
+    "timezone": "Asia/Dhaka",
+    "currency": "BDT",
+    "releaseNotes": {
+      "bn": "নতুন সংস্করণ ৮.১.০ রিলিজ: ৫-পিলার সাইডবার এক্সপ্লোরার, অডিট ট্রেইল, ফিন্যান্সিয়াল লেজার গার্ড ও রিয়েল-টাইম ওয়েবহুক ইন্টিগ্রেশন।",
+      "en": "New release 8.1.0: 5-pillar sidebar explorer, audit trail, financial ledger guard, and real-time webhook integration."
+    },
+    "forceUpdate": false
+  }
+}

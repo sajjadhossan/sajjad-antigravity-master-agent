@@ -2,7 +2,7 @@
   "name": "sajjad-antigravity-master-agent",
   "displayName": "Sajjad Antigravity Master Agent & Multi-Platform APK Guard",
   "description": "50-in-1 enterprise-grade developer tooling, AI rules engine, multi-platform APK pre-flight guard & GitHub CI/CD automation by Sajjad Hossan.",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "publisher": "sajjadhossan",
   "author": {
     "name": "Sajjad Hossan",
@@ -320,7 +320,13 @@
         },
         "antigravityMaster.backup.cloudProvider": {
           "type": "string",
-          "enum": ["local", "s3", "gcs", "azure", "supabase"],
+          "enum": [
+            "local",
+            "s3",
+            "gcs",
+            "azure",
+            "supabase"
+          ],
           "default": "local",
           "description": "Configured backup storage provider."
         },
@@ -339,12 +345,20 @@
           "items": {
             "type": "string"
           },
-          "default": ["en", "bn"],
+          "default": [
+            "en",
+            "bn"
+          ],
           "description": "Supported UI languages."
         },
         "antigravityMaster.ai.provider": {
           "type": "string",
-          "enum": ["gemini", "openai", "anthropic", "custom"],
+          "enum": [
+            "gemini",
+            "openai",
+            "anthropic",
+            "custom"
+          ],
           "default": "gemini",
           "description": "Configured AI provider for planner & self-healing."
         },
@@ -365,7 +379,11 @@
         },
         "antigravityMaster.ui.language": {
           "type": "string",
-          "enum": ["auto", "en", "bn"],
+          "enum": [
+            "auto",
+            "en",
+            "bn"
+          ],
           "default": "auto",
           "description": "Dashboard interface language."
         }

@@ -5,6 +5,23 @@ All notable changes to the "Antigravity Master Agent, Rules Engine & Multi-Platf
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.1.0] - 2026-11-04
+
+### Added
+- **Multi-Platform Release Version Automation**:
+  - Automated release tagging and synchronization across `package.json`, `package-lock.json`, `pubspec.yaml`, Android Gradle, Tauri, and `.version.json`.
+- **Financial Ledger & Currency Precision Guard (`FinancialLedgerGuardService`)**:
+  - Automated detection of floating-point arithmetic on currency values (`amount Float`, `parseFloat(amount)`, Dart `double`).
+  - Mandatory `tenant_id` filter auditor for financial and ledger database queries (Section 4 Rule 6).
+- **80mm Thermal Receipt Simulator & HMAC Invoice QR**:
+  - ESC/POS standard thermal receipt generation with bilingual Bengali/English branding, line items table, and cryptographic HMAC-SHA256 digital verification QR.
+- **Enterprise Immutable Audit Trail Service (`AuditTrailService`)**:
+  - Cryptographic tamper-evident audit logging at `.antigravity/audit/audit-trail.jsonl` with full markdown viewer command (`antigravityMaster.viewAuditTrail`).
+- **Real-Time Error & Incident Webhook Dispatcher (`WebhookDispatcherService`)**:
+  - Redacted live event dispatcher for Slack, Discord, Telegram, and REST endpoints (Module 10 & 35).
+- **Consolidated Executive Status Bar Quick Menu**:
+  - High-visibility `$(shield) Sajjad Guard: 100% PASS` with 1-click executive QuickPick launcher.
+
 ## [8.0.0] - 2026-11-04
 
 ### Added
