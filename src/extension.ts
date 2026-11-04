@@ -11,6 +11,8 @@ import { AndroidPreflightService } from './android/apk-preflight';
 import { ProjectMemoryManager } from './memory/project-memory.manager';
 import { BackupRecoveryService } from './backup/backup-recovery.service';
 import { DependencyScanner } from './core/dependency-scanner';
+import { AntigravityCodeActionProvider } from './editor/code-action.provider';
+import { AntigravityCodeLensProvider } from './editor/codelens.provider';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
@@ -38,7 +40,28 @@ export function activate(context: vscode.ExtensionContext) {
   // 3. Register Commands
   registerExtensionCommands(context);
 
-  // 4. Immediate Initial Module Scan
+  // 4. Register Editor CodeLens & Lightbulb QuickFix Providers
+  const docSelectors: vscode.DocumentSelector = [
+    { scheme: 'file', language: 'typescript' },
+    { scheme: 'file', language: 'javascript' },
+    { scheme: 'file', language: 'dart' },
+    { scheme: 'file', language: 'json' },
+    { scheme: 'file', language: 'ignore' },
+  ];
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      docSelectors,
+      new AntigravityCodeActionProvider(),
+      { providedCodeActionKinds: AntigravityCodeActionProvider.providedCodeActionKinds }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(docSelectors, new AntigravityCodeLensProvider())
+  );
+
+  // 5. Immediate Initial Module Scan
   setTimeout(() => {
     ModuleRegistry.getInstance().runFullScan().then(() => {
       dashboardProvider.render();

@@ -8,6 +8,54 @@ export const workspace = {
 
 export const languages = {
   getDiagnostics: () => [],
+  createDiagnosticCollection: () => ({
+    set: () => {},
+    clear: () => {},
+    dispose: () => {},
+  }),
+  registerCodeActionsProvider: () => ({ dispose: () => {} }),
+  registerCodeLensProvider: () => ({ dispose: () => {} }),
+};
+
+export const CodeActionKind = {
+  QuickFix: 'quickfix',
+  Refactor: 'refactor',
+};
+
+export class CodeAction {
+  public isPreferred?: boolean;
+  public diagnostics?: any[];
+  public command?: any;
+  public edit?: any;
+  constructor(public title: string, public kind?: any) {}
+}
+
+export class CodeLens {
+  constructor(public range: any, public command?: any) {}
+}
+
+export class Range {
+  constructor(public startLine: number, public startCol: number, public endLine: number, public endCol: number) {}
+}
+
+export class Position {
+  constructor(public line: number, public character: number) {}
+}
+
+export class WorkspaceEdit {
+  insert() {}
+  replace() {}
+  delete() {}
+}
+
+export class EventEmitter {
+  public event = () => {};
+  fire() {}
+}
+
+export const Uri = {
+  file: (f: string) => ({ fsPath: f }),
+  joinPath: (base: any, ...segments: string[]) => ({ fsPath: `${base.fsPath || ''}/${segments.join('/')}` }),
 };
 
 export const window = {
