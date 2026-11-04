@@ -228,6 +228,16 @@
         "command": "antigravityMaster.auditFinancialLedger",
         "title": "Antigravity: 💰 Audit Financial Ledger & Currency Float Precision",
         "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.showQuickMenu",
+        "title": "Antigravity: ⚡ Open Sajjad Master Quick Action Menu",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.viewAuditTrail",
+        "title": "Antigravity: 📜 View Immutable Enterprise Audit Trail Log",
+        "category": "Antigravity Master"
       }
     ],
     "configuration": {

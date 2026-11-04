@@ -18,6 +18,7 @@ import { WorkflowGeneratorService } from './devops/workflow-generator.service';
 import { AiBlueprintService } from './ai/ai-blueprint.service';
 import { DeadCodePurgerService } from './cleaner/dead-code-purger.service';
 import { FinancialLedgerGuardService } from './finance/financial-ledger-guard.service';
+import { AuditTrailService } from './audit/audit-trail.service';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
@@ -162,6 +163,17 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
           dashboardProvider.render();
           statusBar.updateFromReport(report);
 
+          const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (root) {
+            AuditTrailService.getInstance().logEvent(
+              root,
+              'EVALUATE_RELEASE_GATE',
+              'RELEASE_GATE',
+              report.isLocked ? 'BLOCKED' : 'SUCCESS',
+              { blockerCount: report.blockerCount, warningCount: report.warningCount }
+            );
+          }
+
           if (report.isLocked) {
             vscode.window.showErrorMessage(
               `🛡️ Release Gate BLOCKED: ${report.blockerCount} critical blockers detected. Review Command Center.`,
@@ -299,11 +311,47 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: rejectPlan
+  // Command: showQuickMenu
   context.subscriptions.push(
-    vscode.commands.registerCommand('antigravityMaster.rejectPlan', () => {
-      vscode.window.showWarningMessage('❌ AI execution plan REJECTED or requested for revision. Implementation paused.');
-      statusBar.updateStatus(false, RulesEngine.getInstance().getActiveRules().length, true, true, true, false, 'Waiting');
+    vscode.commands.registerCommand('antigravityMaster.showQuickMenu', async () => {
+      const menuItems = [
+        { label: '$(dashboard) Open Command Center Dashboard', id: 'openDashboard', detail: 'View 4 Executive Tabs, SVG Health Meter and 50 Modules' },
+        { label: '$(zap) ✨ 1-Click Auto-Heal Workspace', id: 'autoHeal', detail: 'Automatically fix missing memory, rules, security and CI/CD' },
+        { label: '$(shield) Run Full 50-Module Sweep', id: 'runAllChecks', detail: 'Execute diagnostic scan across all 50 enterprise modules' },
+        { label: '$(lock) Force-Verify 1–50 & Evaluate Release Gate', id: 'forceVerifyAndPrepareRelease', detail: 'Audit release readiness and lock dirty deliveries' },
+        { label: '$(history) View Audit Trail Log', id: 'viewAuditTrail', detail: 'Inspect immutable, tamper-evident audit records (.antigravity/audit)' },
+        { label: '$(circuit-board) 📐 Generate AI Architecture Blueprint', id: 'runAiPlanner', detail: 'Design multi-tenant database, API, and UI wireframe' },
+        { label: '$(device-mobile) 🧾 Preview 80mm Thermal Receipt', id: 'previewThermalReceipt', detail: 'Open ESC/POS thermal receipt simulator with verification QR' },
+        { label: '$(trash) 🧹 Purge Dead Code & Debug Logs', id: 'purgeDeadCode', detail: 'Clean console.log statements and prune empty directories with backup' },
+        { label: '$(git-pull-request) Generate GitHub Actions CI/CD Workflows', id: 'generateWorkflows', detail: 'Produce production-ready pipelines (Android, Vercel, Desktop)' },
+        { label: '$(key) Audit Hardcoded Secrets & Tokens', id: 'scanSecrets', detail: 'Deep scan codebase for exposed API keys, JWTs and DB URLs' },
+      ];
+
+      const chosen = await vscode.window.showQuickPick(menuItems, {
+        placeHolder: 'Sajjad Antigravity Master — Select Executive Action',
+      });
+
+      if (chosen) {
+        vscode.commands.executeCommand(`antigravityMaster.${chosen.id}`);
+      }
+    })
+  );
+
+  // Command: viewAuditTrail
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.viewAuditTrail', async () => {
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
+      const report = AuditTrailService.getInstance().generateMarkdownReport(root);
+      const doc = await vscode.workspace.openTextDocument({
+        content: report,
+        language: 'markdown',
+      });
+      await vscode.window.showTextDocument(doc, { preview: false, viewColumn: vscode.ViewColumn.Beside });
     })
   );
 
@@ -694,6 +742,14 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
             if (!fs.existsSync(wfDir)) {
               WorkflowGeneratorService.getInstance().generateEnterpriseWorkflows(root);
             }
+
+            AuditTrailService.getInstance().logEvent(
+              root,
+              'WORKSPACE_AUTO_HEAL',
+              'AUTO_HEAL',
+              'SUCCESS',
+              { repaired: true, timestamp: new Date().toISOString() }
+            );
           }
 
           await ModuleRegistry.getInstance().runFullScan();
