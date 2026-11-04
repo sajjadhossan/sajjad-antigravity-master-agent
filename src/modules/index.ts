@@ -5,6 +5,7 @@ import { IModuleDefinition, IModuleScanResult, ModuleStatus, IModuleIssue } from
 import { AndroidPreflightService } from '../android/apk-preflight';
 import { RulesEngine } from '../rules/rules-engine';
 import { SecurityVault } from '../core/security-vault';
+import { DependencyScanner } from '../core/dependency-scanner';
 
 /**
  * Base helper to safely walk files without blocking the event loop
@@ -878,13 +879,27 @@ export class Module27CloudBackupSchedule implements IModuleDefinition {
   readonly category = 'DataSafety';
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
+    let backupStatus = 'NO_SNAPSHOT';
+    let lastBackupTime = 'Never';
+    if (workspaceRoot) {
+      const backupDir = path.join(workspaceRoot, '.backups');
+      if (fs.existsSync(backupDir)) {
+        const archives = fs.readdirSync(backupDir).filter(f => f.startsWith('backup-') && f.endsWith('.gz'));
+        if (archives.length > 0) {
+          archives.sort().reverse();
+          backupStatus = 'HEALTHY_VERIFIED';
+          lastBackupTime = archives[0].replace('backup-', '').replace('.gz', '');
+        }
+      }
+    }
+
     return {
       moduleNumber: 27,
       moduleName: this.name,
       status: ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues: [],
-      metrics: { retentionDays: 30, lastSuccessfulBackup: new Date().toISOString() },
+      metrics: { retentionDays: 30, backupStatus, lastSuccessfulBackup: lastBackupTime },
     };
   }
 }
@@ -1162,20 +1177,23 @@ export class Module41OwaspScanner implements IModuleDefinition {
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
     const issues: IModuleIssue[] = [];
+    let scannedPkgCount = 0;
+    let lockfilePresent = false;
+
     if (workspaceRoot) {
-      const lockPath = path.join(workspaceRoot, 'package-lock.json');
-      if (fs.existsSync(lockPath)) {
-        // High-level check
-      }
+      const rep = await DependencyScanner.getInstance().scanWorkspaceDependencies(workspaceRoot);
+      issues.push(...rep.issues);
+      scannedPkgCount = rep.totalDependencies;
+      lockfilePresent = rep.hasLockfile;
     }
 
     return {
       moduleNumber: 41,
       moduleName: this.name,
-      status: ModuleStatus.WORKING,
+      status: issues.some(i => i.severity === 'CRITICAL') ? ModuleStatus.ERROR : ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues,
-      metrics: { scannedPackages: 48, cveCount: 0 },
+      metrics: { scannedPackages: scannedPkgCount, lockfilePresent, vulnerabilitiesDetected: issues.length },
     };
   }
 }

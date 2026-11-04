@@ -78,8 +78,73 @@ export class SecurityVault {
   }
 
   /**
-   * Securely saves credential to VS Code OS-backed SecretStorage
+   * Returns list of secret regex patterns for scanning
    */
+  public getSecretPatterns(): Array<{ name: string; regex: RegExp }> {
+    return this.secretPatterns;
+  }
+
+  /**
+   * Scans a workspace for hardcoded plaintext credentials and tokens
+   */
+  public async scanWorkspaceForSecrets(workspaceRoot: string): Promise<Array<{
+    file: string;
+    line: number;
+    secretType: string;
+    maskedPreview: string;
+  }>> {
+    const fs = await import('fs');
+    const path = await import('path');
+    const detected: Array<{ file: string; line: number; secretType: string; maskedPreview: string }> = [];
+
+    const ignoredDirs = new Set(['.git', 'node_modules', 'dist', 'out', 'build', '.vscode-test']);
+
+    function walkDir(dir: string, depth = 0) {
+      if (depth > 6) {
+        return;
+      }
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (ignoredDirs.has(entry.name)) {
+            continue;
+          }
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            walkDir(fullPath, depth + 1);
+          } else if (entry.isFile()) {
+            const ext = path.extname(entry.name).toLowerCase();
+            const allowedExts = ['.ts', '.js', '.dart', '.json', '.env', '.yaml', '.yml', '.xml', '.properties', '.html'];
+            if (!allowedExts.includes(ext) && !entry.name.startsWith('.env')) {
+              continue;
+            }
+            try {
+              const content = fs.readFileSync(fullPath, 'utf8');
+              const lines = content.split('\n');
+              for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                const line = lines[lineIdx];
+                for (const pat of SecurityVault.getInstance().secretPatterns) {
+                  pat.regex.lastIndex = 0;
+                  const match = pat.regex.exec(line);
+                  if (match) {
+                    detected.push({
+                      file: fullPath,
+                      line: lineIdx + 1,
+                      secretType: pat.name,
+                      maskedPreview: SecurityVault.getInstance().maskSecrets(match[0]),
+                    });
+                  }
+                }
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
+
+    walkDir(workspaceRoot);
+    return detected;
+  }
   public async storeSecret(key: string, value: string): Promise<void> {
     if (this.secretStorage) {
       await this.secretStorage.store(key, value);

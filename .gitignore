@@ -8,6 +8,7 @@ dist/
 out/
 *.vsix
 *.vsix.sha256
+.backups/
 
 # Environment and sensitive keys
 .env

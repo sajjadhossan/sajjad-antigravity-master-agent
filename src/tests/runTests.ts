@@ -1,6 +1,7 @@
 import { runSecurityVaultTests } from './security-vault.test';
 import { runModulesTests } from './modules.test';
 import { runReleaseGateTests } from './release-gate.test';
+import { runBackupAndDependencyTests } from './backup-and-dependencies.test';
 
 async function main() {
   console.log('====================================================');
@@ -11,6 +12,7 @@ async function main() {
     runSecurityVaultTests();
     runModulesTests();
     runReleaseGateTests();
+    await runBackupAndDependencyTests();
     console.log('\n✅ ALL TEST SUITES PASSED SUCCESSFULLY (0 FAILURES).');
   } catch (err) {
     console.error('\n❌ TEST SUITE FAILURE:', err);

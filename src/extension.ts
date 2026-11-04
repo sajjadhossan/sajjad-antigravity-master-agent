@@ -9,17 +9,22 @@ import { ReleaseGateService } from './release/release-gate.service';
 import { DashboardViewProvider } from './webview/dashboard-provider';
 import { AndroidPreflightService } from './android/apk-preflight';
 import { ProjectMemoryManager } from './memory/project-memory.manager';
+import { BackupRecoveryService } from './backup/backup-recovery.service';
+import { DependencyScanner } from './core/dependency-scanner';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
+let diagnosticCollection: vscode.DiagnosticCollection;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Activating Antigravity Master Agent v8.0.0...');
 
-  // 1. Initialize Core Singletons
+  // 1. Initialize Core Singletons & Diagnostic Collection
   SecurityVault.getInstance().init(context);
   RulesEngine.getInstance().init(context);
   statusBar = new StatusBarManager();
+  diagnosticCollection = vscode.languages.createDiagnosticCollection('antigravityMaster');
+  context.subscriptions.push(diagnosticCollection);
 
   // 2. Register Dashboard Webview Provider
   dashboardProvider = new DashboardViewProvider(context.extensionUri);
@@ -37,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   setTimeout(() => {
     ModuleRegistry.getInstance().runFullScan().then(() => {
       dashboardProvider.render();
+      updateDiagnosticsFromResults(ModuleRegistry.getInstance().getAllResults());
       const lastReport = ReleaseGateService.getInstance().getLastReport();
       if (lastReport) {
         statusBar.updateFromReport(lastReport);
@@ -316,7 +322,29 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   // Command: generateApkQr
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.generateApkQr', async () => {
-      const downloadUrl = 'https://github.com/antigravity-technologies/antigravity-master-agent/releases/latest';
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      let downloadUrl = 'https://github.com/sajjadhossan/sajjad-antigravity-master-agent/releases/latest';
+
+      if (root) {
+        const config = vscode.workspace.getConfiguration('antigravityMaster');
+        const owner = config.get<string>('github.owner');
+        const repo = config.get<string>('github.repo');
+        if (owner && repo) {
+          downloadUrl = `https://github.com/${owner}/${repo}/releases/latest`;
+        } else {
+          const pkgPath = path.join(root, 'package.json');
+          if (fs.existsSync(pkgPath)) {
+            try {
+              const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+              if (pkg.repository?.url) {
+                const clean = pkg.repository.url.replace(/\.git$/, '').replace(/^git\+/, '');
+                downloadUrl = `${clean}/releases/latest`;
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
       const encoded = encodeURIComponent(downloadUrl);
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encoded}`;
 
@@ -341,28 +369,70 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   // Command: runBackupTest
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.runBackupTest', async () => {
-      vscode.window.showInformationMessage('Simulating encrypted local & cloud backup... Checksum match: SHA256 VALID.');
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found to perform backup test.');
+        return;
+      }
+      try {
+        const res = await BackupRecoveryService.getInstance().createBackup(root);
+        vscode.window.showInformationMessage(
+          `✅ Encrypted workspace backup created: ${path.basename(res.archivePath)} (${(res.manifest.compressedBytes / 1024).toFixed(1)} KB, ${res.manifest.totalFiles} files). SHA-256 verified.`
+        );
+      } catch (err: any) {
+        vscode.window.showErrorMessage(`Backup creation failed: ${err.message || String(err)}`);
+      }
     })
   );
 
   // Command: validateRestore
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.validateRestore', async () => {
-      vscode.window.showInformationMessage('Simulated restore: 100% record integrity, schema compatible.');
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found to validate restore.');
+        return;
+      }
+      const val = await BackupRecoveryService.getInstance().validateLatestBackup(root);
+      if (val.valid) {
+        vscode.window.showInformationMessage(`🛡️ Backup Integrity Check: PASSED. ${val.message}`);
+      } else {
+        vscode.window.showWarningMessage(`⚠️ Backup Integrity Check: ${val.message}`);
+      }
     })
   );
 
   // Command: scanSecrets
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.scanSecrets', async () => {
-      vscode.window.showInformationMessage('Deep Secret Scan: 0 plaintext credentials found in active workspace.');
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        return;
+      }
+      const leaks = await SecurityVault.getInstance().scanWorkspaceForSecrets(root);
+      if (leaks.length === 0) {
+        vscode.window.showInformationMessage('✅ Deep Secret Scan: 0 plaintext credentials or leaked keys detected across active workspace.');
+      } else {
+        vscode.window.showErrorMessage(
+          `🛡️ Deep Secret Scan: Found ${leaks.length} potential plaintext secret(s)! Issue in ${path.basename(leaks[0].file)}: line ${leaks[0].line} (${leaks[0].secretType}).`
+        );
+      }
     })
   );
 
   // Command: scanDependencies
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.scanDependencies', async () => {
-      vscode.window.showInformationMessage('Dependency CVE Scan: 0 critical vulnerabilities found.');
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        return;
+      }
+      const rep = await DependencyScanner.getInstance().scanWorkspaceDependencies(root);
+      if (rep.issues.length === 0) {
+        vscode.window.showInformationMessage(`✅ Dependency CVE & Lockfile Scan: PASSED. ${rep.summary}`);
+      } else {
+        vscode.window.showWarningMessage(`⚠️ Dependency Audit: Found ${rep.issues.length} issue(s). ${rep.summary}`);
+      }
     })
   );
 
@@ -457,8 +527,52 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   );
 }
 
+function updateDiagnosticsFromResults(results: any[]): void {
+  if (!diagnosticCollection) {
+    return;
+  }
+  diagnosticCollection.clear();
+  const fileIssueMap = new Map<string, vscode.Diagnostic[]>();
+
+  for (const res of results) {
+    if (!res.issues || !Array.isArray(res.issues)) {
+      continue;
+    }
+    for (const issue of res.issues) {
+      if (issue.filePath && fs.existsSync(issue.filePath)) {
+        const lineNum = Math.max(0, (issue.lineNumber || 1) - 1);
+        const range = new vscode.Range(lineNum, 0, lineNum, 120);
+        let severity = vscode.DiagnosticSeverity.Information;
+        if (issue.severity === 'CRITICAL' || issue.severity === 'HIGH') {
+          severity = vscode.DiagnosticSeverity.Error;
+        } else if (issue.severity === 'MEDIUM') {
+          severity = vscode.DiagnosticSeverity.Warning;
+        }
+
+        const diag = new vscode.Diagnostic(
+          range,
+          `[Antigravity Guard #${issue.moduleNumber}] ${issue.message}${issue.remediation ? ' -> ' + issue.remediation : ''}`,
+          severity
+        );
+        diag.source = 'Antigravity Guard';
+
+        const list = fileIssueMap.get(issue.filePath) || [];
+        list.push(diag);
+        fileIssueMap.set(issue.filePath, list);
+      }
+    }
+  }
+
+  for (const [filePath, diags] of fileIssueMap.entries()) {
+    diagnosticCollection.set(vscode.Uri.file(filePath), diags);
+  }
+}
+
 export function deactivate() {
   if (statusBar) {
     statusBar.dispose();
+  }
+  if (diagnosticCollection) {
+    diagnosticCollection.dispose();
   }
 }

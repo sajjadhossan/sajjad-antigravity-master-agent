@@ -9,3 +9,4 @@ docs/**
 tsconfig.json
 esbuild.js
 dist/tests/**
+.backups/**
