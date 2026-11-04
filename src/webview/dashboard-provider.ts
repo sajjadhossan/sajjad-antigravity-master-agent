@@ -6,6 +6,7 @@ import { ReleaseGateService } from '../release/release-gate.service';
 import { LocalizationService } from '../i18n/localization.service';
 import { RulesEngine } from '../rules/rules-engine';
 import { ProjectMemoryManager } from '../memory/project-memory.manager';
+import { PillarTreeDataProvider } from '../views/pillar-tree.provider';
 import { getDashboardHtml } from './dashboard-html';
 
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
@@ -79,6 +80,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
                 // 4. Run full sweep scan
                 await ModuleRegistry.getInstance().runFullScan();
                 this.render();
+                PillarTreeDataProvider.getInstance().refresh();
                 vscode.window.showInformationMessage('✅ Sajjad Auto-Heal: Resolved 100% of auto-fixable project configurations!');
               }
             }

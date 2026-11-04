@@ -13,6 +13,8 @@ import { BackupRecoveryService } from './backup/backup-recovery.service';
 import { DependencyScanner } from './core/dependency-scanner';
 import { AntigravityCodeActionProvider } from './editor/code-action.provider';
 import { AntigravityCodeLensProvider } from './editor/codelens.provider';
+import { PillarTreeDataProvider } from './views/pillar-tree.provider';
+import { WorkflowGeneratorService } from './devops/workflow-generator.service';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
@@ -28,13 +30,18 @@ export function activate(context: vscode.ExtensionContext) {
   diagnosticCollection = vscode.languages.createDiagnosticCollection('antigravityMaster');
   context.subscriptions.push(diagnosticCollection);
 
-  // 2. Register Dashboard Webview Provider
+  // 2. Register Dashboard Webview Provider & Sidebar Tree View Provider
   dashboardProvider = new DashboardViewProvider(context.extensionUri);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       DashboardViewProvider.viewType,
       dashboardProvider
     )
+  );
+
+  const pillarTreeProvider = PillarTreeDataProvider.getInstance();
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider('antigravityMaster.pillarExplorer', pillarTreeProvider)
   );
 
   // 3. Register Commands
@@ -65,6 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
   setTimeout(() => {
     ModuleRegistry.getInstance().runFullScan().then(() => {
       dashboardProvider.render();
+      pillarTreeProvider.refresh();
       updateDiagnosticsFromResults(ModuleRegistry.getInstance().getAllResults());
       const lastReport = ReleaseGateService.getInstance().getLastReport();
       if (lastReport) {
@@ -129,6 +137,8 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
         async () => {
           await ModuleRegistry.getInstance().runFullScan();
           dashboardProvider.render();
+          PillarTreeDataProvider.getInstance().refresh();
+          updateDiagnosticsFromResults(ModuleRegistry.getInstance().getAllResults());
           vscode.window.showInformationMessage('All 50 modules verified successfully.');
         }
       );
@@ -327,18 +337,40 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('antigravityMaster.generateWorkflows', async () => {
       const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
         return;
       }
-      const wfDir = path.join(root, '.github', 'workflows');
-      fs.mkdirSync(wfDir, { recursive: true });
-      vscode.window.showInformationMessage('GitHub Actions workflows directory verified at .github/workflows');
+      const generated = WorkflowGeneratorService.getInstance().generateEnterpriseWorkflows(root);
+      const names = generated.map(g => g.fileName).join(', ');
+      vscode.window.showInformationMessage(`✅ Generated ${generated.length} enterprise CI/CD workflows: ${names}`);
+      dashboardProvider.render();
+      PillarTreeDataProvider.getInstance().refresh();
     })
   );
 
   // Command: monitorGitHubActions
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.monitorGitHubActions', async () => {
-      vscode.window.showInformationMessage('GitHub Actions CI/CD Monitor: All recent runs green or waiting for push.');
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+      const audit = WorkflowGeneratorService.getInstance().auditWorkflows(root);
+      if (audit.total === 0) {
+        const choice = await vscode.window.showWarningMessage(
+          'No CI/CD workflows detected in .github/workflows. Generate them now?',
+          'Generate Workflows',
+          'Dismiss'
+        );
+        if (choice === 'Generate Workflows') {
+          vscode.commands.executeCommand('antigravityMaster.generateWorkflows');
+        }
+      } else if (audit.issues.length > 0) {
+        vscode.window.showErrorMessage(`GitHub Actions Audit: ${audit.issues.length} issues found: ${audit.issues.join(' | ')}`);
+      } else {
+        vscode.window.showInformationMessage(`GitHub Actions CI/CD Audit: ${audit.valid}/${audit.total} workflows active and syntactically valid.`);
+      }
     })
   );
 
@@ -537,15 +569,94 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: exportDiagnosticReport
+  // Command: autoHeal
   context.subscriptions.push(
-    vscode.commands.registerCommand('antigravityMaster.exportDiagnosticReport', async () => {
-      const report = ReleaseGateService.getInstance().getLastReport();
-      const text = report ? report.summaryText : 'No release gate report evaluated yet. Run force-verify first.';
-      const sanitized = SecurityVault.getInstance().maskSecrets(text);
-      vscode.workspace.openTextDocument({ content: sanitized, language: 'markdown' }).then(doc => {
-        vscode.window.showTextDocument(doc);
-      });
+    vscode.commands.registerCommand('antigravityMaster.autoHeal', async () => {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Auto-Healing workspace configurations & compliance...',
+          cancellable: false,
+        },
+        async () => {
+          const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (root) {
+            // 1. Ensure .project-memory.json
+            const memPath = path.join(root, '.project-memory.json');
+            if (!fs.existsSync(memPath)) {
+              try {
+                const defMem = await ProjectMemoryManager.getInstance().loadMemory();
+                await ProjectMemoryManager.getInstance().saveMemory(defMem);
+              } catch (e) {}
+            }
+
+            // 2. Ensure security patterns in .gitignore
+            const gitignorePath = path.join(root, '.gitignore');
+            if (fs.existsSync(gitignorePath)) {
+              let content = fs.readFileSync(gitignorePath, 'utf8');
+              const required = ['.env', 'key.properties', '*.jks', '*.keystore', '.backups/', '.backups/**'];
+              let modified = false;
+              for (const req of required) {
+                if (!content.includes(req.replace('*', ''))) {
+                  content += `\n# Sajjad Guard auto-protection\n${req}\n`;
+                  modified = true;
+                }
+              }
+              if (modified) {
+                fs.writeFileSync(gitignorePath, content, 'utf8');
+              }
+            }
+
+            // 3. Ensure .project-rules.json
+            const rulesPath = path.join(root, '.project-rules.json');
+            if (!fs.existsSync(rulesPath)) {
+              try {
+                await RulesEngine.getInstance().createWorkspaceProjectRules();
+              } catch (e) {}
+            }
+
+            // 4. Ensure .github/workflows directory & workflows
+            const wfDir = path.join(root, '.github', 'workflows');
+            if (!fs.existsSync(wfDir)) {
+              WorkflowGeneratorService.getInstance().generateEnterpriseWorkflows(root);
+            }
+          }
+
+          await ModuleRegistry.getInstance().runFullScan();
+          dashboardProvider.render();
+          PillarTreeDataProvider.getInstance().refresh();
+          updateDiagnosticsFromResults(ModuleRegistry.getInstance().getAllResults());
+          const lastReport = ReleaseGateService.getInstance().getLastReport();
+          if (lastReport) {
+            statusBar.updateFromReport(lastReport);
+          }
+          vscode.window.showInformationMessage('✅ Sajjad Auto-Heal: Workspace configurations repaired & verified!');
+        }
+      );
+    })
+  );
+
+  // Command: showModuleDetail
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.showModuleDetail', async (moduleData: any) => {
+      if (!moduleData) {
+        return;
+      }
+      const title = `Module ${moduleData.moduleNumber}: ${moduleData.moduleName}`;
+      const msg = `Status: ${moduleData.status}\nCategory: ${moduleData.category || 'General'}\nDetails: ${moduleData.message || 'Operational'}`;
+      if (moduleData.remediation) {
+        const choice = await vscode.window.showInformationMessage(
+          `${title}\n\n${msg}\n\nRemediation:\n${moduleData.remediation}`,
+          { modal: true },
+          'Auto-Heal Workspace',
+          'Dismiss'
+        );
+        if (choice === 'Auto-Heal Workspace') {
+          vscode.commands.executeCommand('antigravityMaster.autoHeal');
+        }
+      } else {
+        vscode.window.showInformationMessage(`${title}\n\n${msg}`, { modal: true });
+      }
     })
   );
 }

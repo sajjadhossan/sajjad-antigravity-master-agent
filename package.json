@@ -42,6 +42,7 @@
   "license": "Apache-2.0",
   "activationEvents": [
     "onStartupFinished",
+    "onView:antigravityMaster.pillarExplorer",
     "onView:antigravityMaster.dashboardView"
   ],
   "contributes": {
@@ -57,9 +58,13 @@
     "views": {
       "antigravity-master-container": [
         {
+          "id": "antigravityMaster.pillarExplorer",
+          "name": "5-Pillar Enterprise Explorer"
+        },
+        {
           "type": "webview",
           "id": "antigravityMaster.dashboardView",
-          "name": "Sajjad Master Command Center & Modules 1–50"
+          "name": "Visual Command Center & Radar"
         }
       ]
     },
@@ -192,6 +197,16 @@
       {
         "command": "antigravityMaster.initProjectMemory",
         "title": "Antigravity: Initialize AI Project Memory (.project-memory.json)",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.autoHeal",
+        "title": "Antigravity: ✨ 1-Click Auto-Heal Workspace",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.showModuleDetail",
+        "title": "Antigravity: Show Module Details & Remediation",
         "category": "Antigravity Master"
       }
     ],

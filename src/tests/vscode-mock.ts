@@ -85,3 +85,27 @@ export const StatusBarAlignment = {
 export class ThemeColor {
   constructor(public id: string) {}
 }
+
+export class ThemeIcon {
+  constructor(public id: string, public color?: any) {}
+}
+
+export class MarkdownString {
+  constructor(public value: string = '') {}
+}
+
+export enum TreeItemCollapsibleState {
+  None = 0,
+  Collapsed = 1,
+  Expanded = 2,
+}
+
+export class TreeItem {
+  public id?: string;
+  public iconPath?: any;
+  public description?: string;
+  public tooltip?: any;
+  public command?: any;
+  public contextValue?: string;
+  constructor(public label: string, public collapsibleState: TreeItemCollapsibleState = TreeItemCollapsibleState.None) {}
+}

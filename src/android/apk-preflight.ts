@@ -161,23 +161,97 @@ export class AndroidPreflightService {
   public async bumpVersion(workspaceRoot: string, newVersion: string): Promise<string[]> {
     const updatedFiles: string[] = [];
 
+    // Parse integer build number from version string (e.g., 8.1.0 -> 80100) or auto-increment
+    const parts = newVersion.split('.').map(p => parseInt(p, 10) || 0);
+    const calculatedVersionCode = (parts[0] || 1) * 10000 + (parts[1] || 0) * 100 + (parts[2] || 0);
+
     // 1. package.json
     const pkgPath = path.join(workspaceRoot, 'package.json');
     if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      pkg.version = newVersion;
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
-      updatedFiles.push(pkgPath);
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        pkg.version = newVersion;
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+        updatedFiles.push(pkgPath);
+      } catch (e) {}
     }
 
-    // 2. pubspec.yaml
+    // 2. package-lock.json
+    const pkgLockPath = path.join(workspaceRoot, 'package-lock.json');
+    if (fs.existsSync(pkgLockPath)) {
+      try {
+        const pkgLock = JSON.parse(fs.readFileSync(pkgLockPath, 'utf8'));
+        pkgLock.version = newVersion;
+        if (pkgLock.packages && pkgLock.packages['']) {
+          pkgLock.packages[''].version = newVersion;
+        }
+        fs.writeFileSync(pkgLockPath, JSON.stringify(pkgLock, null, 2), 'utf8');
+        updatedFiles.push(pkgLockPath);
+      } catch (e) {}
+    }
+
+    // 3. pubspec.yaml
     const pubspecPath = path.join(workspaceRoot, 'pubspec.yaml');
     if (fs.existsSync(pubspecPath)) {
       let content = fs.readFileSync(pubspecPath, 'utf8');
-      content = content.replace(/^version:\s*[\d\.\+\-]+/m, `version: ${newVersion}+1`);
+      content = content.replace(/^version:\s*[\d\.\+\-]+/m, `version: ${newVersion}+${calculatedVersionCode}`);
       fs.writeFileSync(pubspecPath, content, 'utf8');
       updatedFiles.push(pubspecPath);
     }
+
+    // 4. android/app/build.gradle (Groovy)
+    const gradlePath = path.join(workspaceRoot, 'android', 'app', 'build.gradle');
+    if (fs.existsSync(gradlePath)) {
+      let content = fs.readFileSync(gradlePath, 'utf8');
+      content = content.replace(/versionCode\s+\d+/g, `versionCode ${calculatedVersionCode}`);
+      content = content.replace(/versionName\s+["'][^"']+["']/g, `versionName "${newVersion}"`);
+      fs.writeFileSync(gradlePath, content, 'utf8');
+      updatedFiles.push(gradlePath);
+    }
+
+    // 5. android/app/build.gradle.kts (Kotlin DSL)
+    const gradleKtsPath = path.join(workspaceRoot, 'android', 'app', 'build.gradle.kts');
+    if (fs.existsSync(gradleKtsPath)) {
+      let content = fs.readFileSync(gradleKtsPath, 'utf8');
+      content = content.replace(/versionCode\s*=\s*\d+/g, `versionCode = ${calculatedVersionCode}`);
+      content = content.replace(/versionName\s*=\s*["'][^"']+["']/g, `versionName = "${newVersion}"`);
+      fs.writeFileSync(gradleKtsPath, content, 'utf8');
+      updatedFiles.push(gradleKtsPath);
+    }
+
+    // 6. src-tauri/tauri.conf.json (Desktop)
+    const tauriPath = path.join(workspaceRoot, 'src-tauri', 'tauri.conf.json');
+    if (fs.existsSync(tauriPath)) {
+      try {
+        const tauri = JSON.parse(fs.readFileSync(tauriPath, 'utf8'));
+        if (tauri.package) {
+          tauri.package.version = newVersion;
+        }
+        fs.writeFileSync(tauriPath, JSON.stringify(tauri, null, 2), 'utf8');
+        updatedFiles.push(tauriPath);
+      } catch (e) {}
+    }
+
+    // 7. Version Parity Contract File (.version.json per Section 10 Rule 6)
+    const versionContractPath = path.join(workspaceRoot, '.version.json');
+    const versionContract = {
+      success: true,
+      data: {
+        latestVersion: newVersion,
+        minimumSupportedVersion: newVersion,
+        versionCode: calculatedVersionCode,
+        updatedAt: new Date().toISOString(),
+        timezone: 'Asia/Dhaka',
+        currency: 'BDT',
+        releaseNotes: {
+          bn: `নতুন সংস্করণ ${newVersion} প্রকাশ`,
+          en: `New release version ${newVersion} available`
+        },
+        forceUpdate: false
+      }
+    };
+    fs.writeFileSync(versionContractPath, JSON.stringify(versionContract, null, 2), 'utf8');
+    updatedFiles.push(versionContractPath);
 
     return updatedFiles;
   }
