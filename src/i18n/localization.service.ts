@@ -25,6 +25,13 @@ interface ILocaleStrings {
   blockersLabel: string;
   warningsLabel: string;
   passedLabel: string;
+  healthScoreLabel: string;
+  complianceRadarTitle: string;
+  securityPillar: string;
+  apkPillar: string;
+  codeQualityPillar: string;
+  syncBackupPillar: string;
+  architecturePillar: string;
 }
 
 const enStrings: ILocaleStrings = {
@@ -50,6 +57,13 @@ const enStrings: ILocaleStrings = {
   blockersLabel: 'Critical Blockers',
   warningsLabel: 'Warnings',
   passedLabel: 'Passed',
+  healthScoreLabel: 'Project Health & Compliance Score',
+  complianceRadarTitle: '5-Pillar Enterprise Compliance Radar',
+  securityPillar: 'Security & Secrets',
+  apkPillar: 'Multi-Platform & APK',
+  codeQualityPillar: 'Code Quality & Tests',
+  syncBackupPillar: 'Data Sync & Backup',
+  architecturePillar: 'Architecture & Multi-Tenancy',
 };
 
 const bnStrings: ILocaleStrings = {
@@ -75,6 +89,13 @@ const bnStrings: ILocaleStrings = {
   blockersLabel: 'জরুরি ত্রুটি',
   warningsLabel: 'সতর্কতা',
   passedLabel: 'উত্তীর্ণ',
+  healthScoreLabel: 'প্রজেক্ট হেলথ ও কমপ্লায়েন্স স্কোর',
+  complianceRadarTitle: '৫-স্তম্ভ এন্টারপ্রাইজ কমপ্লায়েন্স রাডার',
+  securityPillar: 'সিকিউরিটি ও সিক্রেট গার্ড',
+  apkPillar: 'মাল্টি-প্ল্যাটফর্ম ও এপিকে',
+  codeQualityPillar: 'কোড কোয়ালিটি ও টেস্ট',
+  syncBackupPillar: 'ডেটা সিঙ্ক ও ব্যাকআপ',
+  architecturePillar: 'আর্কিটেকচার ও মাল্টি-টেন্যান্ট',
 };
 
 export class LocalizationService {

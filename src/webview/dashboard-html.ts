@@ -12,6 +12,89 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
   const errorCount = modules.filter(m => m.status === ModuleStatus.ERROR).length;
   const disabledCount = modules.filter(m => m.status === ModuleStatus.DISABLED).length;
 
+  // 5 Enterprise Pillars Mapping
+  const pillarsDef = [
+    {
+      id: 'security',
+      title: t.securityPillar,
+      icon: '🛡️',
+      categories: ['security', 'rules', 'financial'],
+    },
+    {
+      id: 'apk',
+      title: t.apkPillar,
+      icon: '📱',
+      categories: ['android', 'build', 'ci/cd', 'release', 'crossplatform'],
+    },
+    {
+      id: 'codeQuality',
+      title: t.codeQualityPillar,
+      icon: '🧪',
+      categories: ['codequality', 'testing', 'performance', 'i18n'],
+    },
+    {
+      id: 'syncBackup',
+      title: t.syncBackupPillar,
+      icon: '💾',
+      categories: ['datasafety', 'database', 'automation'],
+    },
+    {
+      id: 'architecture',
+      title: t.architecturePillar,
+      icon: '🏛️',
+      categories: ['architecture', 'ui/ux', 'brand', 'hardware', 'releasegate', 'ai'],
+    },
+  ];
+
+  const pillarCardsHtml = pillarsDef.map(p => {
+    const matched = modules.filter(m => {
+      const cat = (m.category || '').toLowerCase();
+      return p.categories.some(c => cat.includes(c) || m.moduleName.toLowerCase().includes(c));
+    });
+    const pTotal = matched.length || 1;
+    const pWorking = matched.filter(m => m.status === ModuleStatus.WORKING).length;
+    const pError = matched.filter(m => m.status === ModuleStatus.ERROR).length;
+    const pPct = Math.round((pWorking / pTotal) * 100);
+    const pColor = pError > 0 ? '#f85149' : (pPct >= 80 ? '#2ea043' : '#d29922');
+
+    return `
+      <div class="pillar-row" onclick="filterByPillar('${p.categories.join(',')}')" title="Click to filter by ${p.title}">
+        <div class="pillar-meta">
+          <span>${p.icon} ${p.title}</span>
+          <span style="color: ${pColor}; font-weight: 600;">${pPct}% (${pWorking}/${pTotal})</span>
+        </div>
+        <div class="pillar-progress-track">
+          <div class="pillar-progress-fill" style="width: ${pPct}%; background: ${pColor};"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Overall Project Health Score calculation
+  const rawHealth = total > 0 ? ((workingCount * 1.0 + waitingCount * 0.4 - errorCount * 1.5) / total) * 100 : 0;
+  const healthScore = Math.max(0, Math.min(100, Math.round(rawHealth)));
+
+  // SVG Gauge calculations (circumference for r=36 is 226)
+  const circumference = 226;
+  const dashOffset = Math.round(circumference - (circumference * healthScore) / 100);
+
+  let healthColor = '#2ea043';
+  let gradeText = 'Grade A+ (Ready)';
+  let gradeBadgeBg = 'rgba(46, 160, 67, 0.15)';
+  let gradeBadgeBorder = 'rgba(46, 160, 67, 0.4)';
+
+  if (errorCount > 0 || healthScore < 75) {
+    healthColor = '#f85149';
+    gradeText = 'Grade C (Blockers)';
+    gradeBadgeBg = 'rgba(248, 81, 73, 0.15)';
+    gradeBadgeBorder = 'rgba(248, 81, 73, 0.4)';
+  } else if (healthScore < 90) {
+    healthColor = '#d29922';
+    gradeText = 'Grade B (Config Needed)';
+    gradeBadgeBg = 'rgba(210, 153, 34, 0.15)';
+    gradeBadgeBorder = 'rgba(210, 153, 34, 0.4)';
+  }
+
   const rows = modules.map(m => {
     let ledClass = 'led-green';
     let badgeClass = 'badge-working';
@@ -44,7 +127,7 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
     `).join('');
 
     return `
-      <tr data-status="${m.status}" data-name="${m.moduleName.toLowerCase()}" class="module-row">
+      <tr data-status="${m.status}" data-name="${m.moduleName.toLowerCase()}" data-category="${(m.category || '').toLowerCase()}" class="module-row">
         <td>
           <div class="led-wrapper">
             <span class="status-led ${ledClass}" title="${m.status}"></span>
@@ -407,6 +490,108 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
       margin-bottom: 12px;
     }
     .card-box h3 { margin-top: 0; font-size: 14px; }
+
+    /* Health Meter & 5-Pillars Radar Card */
+    .health-radar-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .score-circle-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .score-svg {
+      transform: rotate(-90deg);
+      width: 88px;
+      height: 88px;
+    }
+    .score-bg-circle {
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 8;
+      fill: transparent;
+    }
+    .score-bar-circle {
+      stroke-width: 8;
+      stroke-linecap: round;
+      fill: transparent;
+      transition: stroke-dashoffset 0.8s ease-in-out;
+    }
+    .score-text {
+      font-size: 20px;
+      font-weight: 700;
+      fill: var(--text-color);
+      transform: rotate(90deg);
+      transform-origin: 50% 50%;
+    }
+    .grade-badge {
+      margin-top: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .pillars-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .radar-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .pillar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 4px;
+      transition: background 0.15s ease;
+    }
+    .pillar-row:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .pillar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .pillar-progress-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .pillar-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+
+    @media (max-width: 320px) {
+      .health-radar-card {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -426,6 +611,24 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
   <div class="gate-banner ${isLocked ? 'gate-locked' : 'gate-passed'}">
     <div>${isLocked ? t.releaseGateLocked : t.releaseGatePassed}</div>
     <div style="font-size: 11px;">${isLocked ? 'Fix blockers before push' : 'Ready for release'}</div>
+  </div>
+
+  <!-- COMPLIANCE & HEALTH RADAR CARD -->
+  <div class="health-radar-card">
+    <div class="score-circle-wrapper">
+      <svg class="score-svg" viewBox="0 0 88 88">
+        <circle class="score-bg-circle" cx="44" cy="44" r="36"></circle>
+        <circle class="score-bar-circle" cx="44" cy="44" r="36" style="stroke: ${healthColor}; stroke-dasharray: 226; stroke-dashoffset: ${dashOffset};"></circle>
+        <text class="score-text" x="44" y="44" text-anchor="middle" dominant-baseline="central">${healthScore}%</text>
+      </svg>
+      <div class="grade-badge" style="background: ${gradeBadgeBg}; color: ${healthColor}; border: 1px solid ${gradeBadgeBorder};">
+        ${gradeText}
+      </div>
+    </div>
+    <div class="pillars-wrapper">
+      <div class="radar-header">${t.complianceRadarTitle}</div>
+      ${pillarCardsHtml}
+    </div>
   </div>
 
   <div class="stats-grid">
@@ -622,6 +825,21 @@ export function getDashboardHtml(modules: IModuleScanResult[], isLocked: boolean
         const matchesFilter = currentFilter === 'ALL' || status === currentFilter;
         row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
       });
+    }
+
+    function filterByPillar(catString) {
+      const cats = catString.toLowerCase().split(',');
+      const rows = document.querySelectorAll('#moduleTableBody tr');
+      rows.forEach(row => {
+        const rowCat = (row.getAttribute('data-category') || '').toLowerCase();
+        const rowName = (row.getAttribute('data-name') || '').toLowerCase();
+        const matches = cats.some(c => rowCat.includes(c) || rowName.includes(c));
+        row.style.display = matches ? '' : 'none';
+      });
+      const modTabBtn = document.querySelector('.tab-btn');
+      if (modTabBtn) {
+        switchTab('tab-modules', modTabBtn);
+      }
     }
 
     function forceVerifyAll() {

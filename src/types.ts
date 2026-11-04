@@ -20,6 +20,7 @@ export interface IModuleIssue {
 export interface IModuleScanResult {
   moduleNumber: number;
   moduleName: string;
+  category?: string;
   status: ModuleStatus;
   enabled?: boolean;
   lastChecked: Date;

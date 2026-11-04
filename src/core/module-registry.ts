@@ -28,6 +28,7 @@ export class ModuleRegistry {
       this.latestResults.set(mod.number, {
         moduleNumber: mod.number,
         moduleName: mod.name,
+        category: mod.category,
         status: ModuleStatus.WORKING,
         enabled: true,
         lastChecked: new Date(),
@@ -108,12 +109,14 @@ export class ModuleRegistry {
     try {
       const res = await mod.executeScan(rootPath);
       res.enabled = true;
+      res.category = mod.category;
       this.latestResults.set(number, res);
       return res;
     } catch (err: any) {
       const fallbackResult: IModuleScanResult = {
         moduleNumber: mod.number,
         moduleName: mod.name,
+        category: mod.category,
         status: ModuleStatus.ERROR,
         enabled: true,
         lastChecked: new Date(),
