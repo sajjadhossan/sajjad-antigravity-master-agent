@@ -17,6 +17,7 @@ import { PillarTreeDataProvider } from './views/pillar-tree.provider';
 import { WorkflowGeneratorService } from './devops/workflow-generator.service';
 import { AiBlueprintService } from './ai/ai-blueprint.service';
 import { DeadCodePurgerService } from './cleaner/dead-code-purger.service';
+import { FinancialLedgerGuardService } from './finance/financial-ledger-guard.service';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
@@ -261,11 +262,40 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: approvePlan
+  // Command: previewThermalReceipt
   context.subscriptions.push(
-    vscode.commands.registerCommand('antigravityMaster.approvePlan', () => {
-      vscode.window.showInformationMessage('✅ AI execution plan APPROVED. Implementation modules unlocked.');
-      statusBar.updateStatus(false, RulesEngine.getInstance().getActiveRules().length, true, true, true, false, 'Approved');
+    vscode.commands.registerCommand('antigravityMaster.previewThermalReceipt', async () => {
+      const receipt = FinancialLedgerGuardService.getInstance().generateThermalReceipt();
+      const html = FinancialLedgerGuardService.getInstance().generateThermalReceiptHtml(receipt);
+
+      const panel = vscode.window.createWebviewPanel(
+        'thermalReceiptPreview',
+        `Thermal Receipt: ${receipt.invoiceNo}`,
+        vscode.ViewColumn.Beside,
+        { enableScripts: true }
+      );
+
+      panel.webview.html = html;
+    })
+  );
+
+  // Command: auditFinancialLedger
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.auditFinancialLedger', async () => {
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
+      const audit = await FinancialLedgerGuardService.getInstance().auditFinancialIntegrity(root);
+      if (audit.issues.length === 0) {
+        vscode.window.showInformationMessage('✅ Financial & Ledger Guard: 100% compliant. Zero float currency risks or missing tenant queries.');
+      } else {
+        vscode.window.showWarningMessage(
+          `🛡️ Financial Guard: Found ${audit.floatMathCount} float currency calculations and ${audit.tenantQueryGaps} un-isolated financial queries! Check Command Center.`
+        );
+      }
     })
   );
 

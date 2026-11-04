@@ -9,6 +9,7 @@ import { DependencyScanner } from '../core/dependency-scanner';
 import { ParityGuardService } from '../core/parity-guard.service';
 import { AiBlueprintService } from '../ai/ai-blueprint.service';
 import { DeadCodePurgerService } from '../cleaner/dead-code-purger.service';
+import { FinancialLedgerGuardService } from '../finance/financial-ledger-guard.service';
 
 /**
  * Base helper to safely walk files without blocking the event loop
@@ -584,29 +585,27 @@ export class Module16FinancialAuditor implements IModuleDefinition {
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
     const issues: IModuleIssue[] = [];
-    if (workspaceRoot) {
-      const files = scanFilesRecursively(workspaceRoot, ['.ts', '.dart', '.js'], 30);
-      const floatMoneyRegex = /(double|float|number)\s+(balance|price|amount|invoiceTotal|dueAmount)/i;
+    let floatMathCount = 0;
 
-      for (const file of files) {
-        try {
-          const content = fs.readFileSync(file, 'utf8');
-          const lines = content.split('\n');
-          lines.forEach((line, idx) => {
-            if (floatMoneyRegex.test(line)) {
-              issues.push({
-                id: `FIN-FLOAT-${idx}`,
-                moduleNumber: 16,
-                message: `Floating-point type used for monetary calculation: "${line.trim()}"`,
-                filePath: file,
-                lineNumber: idx + 1,
-                severity: 'CRITICAL',
-                remediation: 'Use Decimal, BigInt, or minor integer units to avoid floating-point balance corruption.',
-              });
-            }
-          });
-        } catch (e) {}
-      }
+    if (workspaceRoot) {
+      try {
+        const audit = await FinancialLedgerGuardService.getInstance().auditFinancialIntegrity(workspaceRoot);
+        floatMathCount = audit.floatMathCount;
+
+        for (const iss of audit.issues) {
+          if (iss.type === 'HAZARDOUS_FLOAT_MATH' || iss.type === 'PRISMA_FLOAT_MONEY') {
+            issues.push({
+              id: `FIN-FLOAT-${path.basename(iss.filePath)}-${iss.lineNumber || 1}`,
+              moduleNumber: 16,
+              message: iss.message,
+              filePath: iss.filePath,
+              lineNumber: iss.lineNumber,
+              severity: iss.severity,
+              remediation: iss.remediation,
+            });
+          }
+        }
+      } catch (e) {}
     }
 
     return {
@@ -615,6 +614,11 @@ export class Module16FinancialAuditor implements IModuleDefinition {
       status: issues.length > 0 ? ModuleStatus.ERROR : ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues,
+      metrics: {
+        floatMoneyCalculations: floatMathCount,
+        currencyStandard: 'BDT',
+        timezoneStandard: 'Asia/Dhaka',
+      },
     };
   }
 }
@@ -625,13 +629,20 @@ export class Module17OfficialBrandingValidator implements IModuleDefinition {
   readonly category = 'Brand';
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
+    const sampleReceipt = FinancialLedgerGuardService.getInstance().generateThermalReceipt();
+
     return {
       moduleNumber: 17,
       moduleName: this.name,
       status: ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues: [],
-      metrics: { letterheadA4: 'VALID', thermalReceipt58mm: 'VALID', thermalReceipt80mm: 'VALID' },
+      metrics: {
+        letterheadA4: 'VALID',
+        thermalReceipt58mm: 'READY',
+        thermalReceipt80mm: 'READY',
+        qrDigitalSignature: sampleReceipt.signature,
+      },
     };
   }
 }
@@ -797,6 +808,21 @@ export class Module23MultiTenantIsolation implements IModuleDefinition {
           }
         } catch (e) {}
       }
+
+      try {
+        const audit = await FinancialLedgerGuardService.getInstance().auditFinancialIntegrity(workspaceRoot);
+        for (const tenantIssue of audit.issues.filter(i => i.type === 'MISSING_TENANT_ID_QUERY')) {
+          issues.push({
+            id: `TENANT-QUERY-${path.basename(tenantIssue.filePath)}-${tenantIssue.lineNumber}`,
+            moduleNumber: 23,
+            message: tenantIssue.message,
+            filePath: tenantIssue.filePath,
+            lineNumber: tenantIssue.lineNumber,
+            severity: 'CRITICAL',
+            remediation: tenantIssue.remediation,
+          });
+        }
+      } catch (e) {}
     }
 
     return {

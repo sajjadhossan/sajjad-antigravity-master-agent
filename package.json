@@ -218,6 +218,16 @@
         "command": "antigravityMaster.scanDeadAssets",
         "title": "Antigravity: Scan for Orphaned Assets & Debug Logs",
         "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.previewThermalReceipt",
+        "title": "Antigravity: 🧾 Preview 80mm Thermal Receipt & Digital QR",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.auditFinancialLedger",
+        "title": "Antigravity: 💰 Audit Financial Ledger & Currency Float Precision",
+        "category": "Antigravity Master"
       }
     ],
     "configuration": {
