@@ -32,6 +32,13 @@ interface ILocaleStrings {
   codeQualityPillar: string;
   syncBackupPillar: string;
   architecturePillar: string;
+  tabOverview: string;
+  tabModulesNav: string;
+  tabDevops: string;
+  tabRulesAi: string;
+  autoHealBtn: string;
+  expandAllBtn: string;
+  collapseAllBtn: string;
 }
 
 const enStrings: ILocaleStrings = {
@@ -64,6 +71,13 @@ const enStrings: ILocaleStrings = {
   codeQualityPillar: 'Code Quality & Tests',
   syncBackupPillar: 'Data Sync & Backup',
   architecturePillar: 'Architecture & Multi-Tenancy',
+  tabOverview: '📊 Overview & Health',
+  tabModulesNav: '🛡️ Guard 1–50',
+  tabDevops: '🛠️ DevOps & Lab',
+  tabRulesAi: '⚖️ Rules & AI',
+  autoHealBtn: '⚡ 1-Click Auto-Heal',
+  expandAllBtn: 'Expand All',
+  collapseAllBtn: 'Collapse All',
 };
 
 const bnStrings: ILocaleStrings = {
@@ -96,6 +110,13 @@ const bnStrings: ILocaleStrings = {
   codeQualityPillar: 'কোড কোয়ালিটি ও টেস্ট',
   syncBackupPillar: 'ডেটা সিঙ্ক ও ব্যাকআপ',
   architecturePillar: 'আর্কিটেকচার ও মাল্টি-টেন্যান্ট',
+  tabOverview: '📊 ওভারভিউ ও হেলথ',
+  tabModulesNav: '🛡️ গার্ড ১–৫০',
+  tabDevops: '🛠️ ডিভঅপ্স ও ল্যাব',
+  tabRulesAi: '⚖️ রুলস ও এআই',
+  autoHealBtn: '⚡ ১-ক্লিকে অটো-হিল (Auto-Heal)',
+  expandAllBtn: 'সব খুলুন',
+  collapseAllBtn: 'সব বন্ধ করুন',
 };
 
 export class LocalizationService {
