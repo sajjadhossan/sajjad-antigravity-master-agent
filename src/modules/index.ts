@@ -6,6 +6,7 @@ import { AndroidPreflightService } from '../android/apk-preflight';
 import { RulesEngine } from '../rules/rules-engine';
 import { SecurityVault } from '../core/security-vault';
 import { DependencyScanner } from '../core/dependency-scanner';
+import { ParityGuardService } from '../core/parity-guard.service';
 
 /**
  * Base helper to safely walk files without blocking the event loop
@@ -1001,12 +1002,29 @@ export class Module32DtoContractValidator implements IModuleDefinition {
   readonly category = 'API';
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
+    const issues: IModuleIssue[] = [];
+    let reportMetrics = {
+      totalEntities: 0,
+      tenantIsolatedPercentage: '100%',
+      softDeletePercentage: '100%',
+      parityViolations: 0,
+    };
+
+    if (workspaceRoot) {
+      const rep = await ParityGuardService.getInstance().auditWorkspaceParity(workspaceRoot);
+      issues.push(...rep.issues);
+      reportMetrics = rep.metrics;
+    }
+
+    const hasCritical = issues.some(i => i.severity === 'CRITICAL');
     return {
       moduleNumber: 32,
       moduleName: this.name,
-      status: ModuleStatus.WORKING,
+      status: hasCritical ? ModuleStatus.ERROR : ModuleStatus.WORKING,
       lastChecked: new Date(),
-      issues: [],
+      issues,
+      metrics: reportMetrics,
+      degradationNote: issues.length > 0 ? `${issues.length} contract parity warning(s) detected.` : undefined,
     };
   }
 }

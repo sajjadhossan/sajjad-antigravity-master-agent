@@ -3,6 +3,7 @@ import { runModulesTests } from './modules.test';
 import { runReleaseGateTests } from './release-gate.test';
 import { runBackupAndDependencyTests } from './backup-and-dependencies.test';
 import { runEditorProvidersTests } from './editor-providers.test';
+import { runParityGuardTests } from './parity-guard.test';
 
 async function main() {
   console.log('====================================================');
@@ -15,6 +16,7 @@ async function main() {
     runReleaseGateTests();
     await runBackupAndDependencyTests();
     runEditorProvidersTests();
+    await runParityGuardTests();
     console.log('\n✅ ALL TEST SUITES PASSED SUCCESSFULLY (0 FAILURES).');
   } catch (err) {
     console.error('\n❌ TEST SUITE FAILURE:', err);

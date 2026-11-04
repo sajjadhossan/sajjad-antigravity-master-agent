@@ -89,6 +89,24 @@ export class AntigravityCodeActionProvider implements vscode.CodeActionProvider 
         fix.edit = edit;
         actions.push(fix);
       }
+
+      // 5. QuickFix: Mandatory tenant_id isolation
+      if (msg.includes('tenant_id') || msg.includes('multi-tenant isolation')) {
+        const fix = new vscode.CodeAction(
+          '🛡️ Sajjad Guard: Insert mandatory tenant_id (Multi-Tenant Isolation)',
+          vscode.CodeActionKind.QuickFix
+        );
+        fix.isPreferred = true;
+        const line = document.lineAt(range.start.line);
+        const edit = new vscode.WorkspaceEdit();
+        const indent = line.text.match(/^\s*/)?.[0] || '  ';
+        const fieldStr = document.fileName.endsWith('.prisma')
+          ? `${indent}tenant_id  String\n`
+          : (document.fileName.endsWith('.dart') ? `${indent}final String tenantId;\n` : `${indent}tenant_id: string;\n`);
+        edit.insert(document.uri, line.range.start, fieldStr);
+        fix.edit = edit;
+        actions.push(fix);
+      }
     }
 
     return actions;
