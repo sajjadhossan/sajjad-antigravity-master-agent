@@ -208,6 +208,16 @@
         "command": "antigravityMaster.showModuleDetail",
         "title": "Antigravity: Show Module Details & Remediation",
         "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.purgeDeadCode",
+        "title": "Antigravity: 🧹 Purge Dead Code, Debug Logs & Empty Directories",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.scanDeadAssets",
+        "title": "Antigravity: Scan for Orphaned Assets & Debug Logs",
+        "category": "Antigravity Master"
       }
     ],
     "configuration": {

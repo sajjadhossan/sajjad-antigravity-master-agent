@@ -7,6 +7,8 @@ import { RulesEngine } from '../rules/rules-engine';
 import { SecurityVault } from '../core/security-vault';
 import { DependencyScanner } from '../core/dependency-scanner';
 import { ParityGuardService } from '../core/parity-guard.service';
+import { AiBlueprintService } from '../ai/ai-blueprint.service';
+import { DeadCodePurgerService } from '../cleaner/dead-code-purger.service';
 
 /**
  * Base helper to safely walk files without blocking the event loop
@@ -344,6 +346,21 @@ export class Module8ApkSizeDiet implements IModuleDefinition {
           }
         } catch (e) {}
       }
+
+      // Check for orphan unreferenced assets
+      try {
+        const cleanAudit = await DeadCodePurgerService.getInstance().auditWorkspace(workspaceRoot);
+        for (const orphan of cleanAudit.issues.filter(i => i.type === 'ORPHAN_ASSET')) {
+          issues.push({
+            id: `ASSET-ORPHAN-${path.basename(orphan.filePath)}`,
+            moduleNumber: 8,
+            message: orphan.description,
+            filePath: orphan.filePath,
+            severity: 'LOW',
+            remediation: 'Remove unreferenced asset or import it into application.',
+          });
+        }
+      } catch (e) {}
     }
 
     return {
@@ -352,6 +369,7 @@ export class Module8ApkSizeDiet implements IModuleDefinition {
       status: ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues,
+      metrics: { oversizedCount: oversizedAssetCount },
     };
   }
 }
@@ -927,13 +945,29 @@ export class Module29InteractivePlanner implements IModuleDefinition {
   readonly category = 'AI';
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
+    let blueprintCount = 0;
+    let stackDesc = 'Generic';
+
+    if (workspaceRoot) {
+      const bpDir = path.join(workspaceRoot, '.antigravity', 'blueprints');
+      if (fs.existsSync(bpDir)) {
+        blueprintCount = fs.readdirSync(bpDir).filter(f => f.endsWith('.md')).length;
+      }
+      const stack = AiBlueprintService.getInstance().detectTechStack(workspaceRoot);
+      stackDesc = `${stack.language}/${stack.framework}/${stack.orm}`;
+    }
+
     return {
       moduleNumber: 29,
       moduleName: this.name,
       status: ModuleStatus.WORKING,
       lastChecked: new Date(),
       issues: [],
-      metrics: { planApprovalRequired: true, breakdownSchemaVersion: '2.0' },
+      metrics: {
+        planApprovalRequired: true,
+        blueprintsGenerated: blueprintCount,
+        detectedStack: stackDesc,
+      },
     };
   }
 }
@@ -1123,12 +1157,35 @@ export class Module37CodeRefactoringPurger implements IModuleDefinition {
   readonly category = 'CodeQuality';
 
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
+    const issues: IModuleIssue[] = [];
+    let consoleLogCount = 0;
+
+    if (workspaceRoot) {
+      try {
+        const audit = await DeadCodePurgerService.getInstance().auditWorkspace(workspaceRoot);
+        consoleLogCount = audit.consoleLogs;
+
+        for (const logIssue of audit.issues.filter(i => i.type === 'CONSOLE_LOG')) {
+          issues.push({
+            id: `CLEAN-LOG-${path.basename(logIssue.filePath)}-${logIssue.lineNumber}`,
+            moduleNumber: 37,
+            message: `${logIssue.description}: "${logIssue.snippet}"`,
+            filePath: logIssue.filePath,
+            lineNumber: logIssue.lineNumber,
+            severity: 'LOW',
+            remediation: 'Remove console.log before production delivery or run "Antigravity: Purge Dead Code & Debug Logs".',
+          });
+        }
+      } catch (e) {}
+    }
+
     return {
       moduleNumber: 37,
       moduleName: this.name,
       status: ModuleStatus.WORKING,
       lastChecked: new Date(),
-      issues: [],
+      issues,
+      metrics: { lingeringConsoleLogs: consoleLogCount },
     };
   }
 }

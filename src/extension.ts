@@ -15,6 +15,8 @@ import { AntigravityCodeActionProvider } from './editor/code-action.provider';
 import { AntigravityCodeLensProvider } from './editor/codelens.provider';
 import { PillarTreeDataProvider } from './views/pillar-tree.provider';
 import { WorkflowGeneratorService } from './devops/workflow-generator.service';
+import { AiBlueprintService } from './ai/ai-blueprint.service';
+import { DeadCodePurgerService } from './cleaner/dead-code-purger.service';
 
 let statusBar: StatusBarManager;
 let dashboardProvider: DashboardViewProvider;
@@ -186,6 +188,12 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   // Command: runAiPlanner
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.runAiPlanner', async () => {
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
       const featureGoal = await vscode.window.showInputBox({
         prompt: 'Describe feature goal for AI intent breakdown & interactive blueprint',
         placeHolder: 'e.g., Add offline member loan repayment with SMS reminder and passbook print',
@@ -194,26 +202,62 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
         return;
       }
 
-      const planSummary = `=== ANTIGRAVITY AI ARCHITECTURE PLAN ===\n` +
-        `Goal: ${featureGoal}\n` +
-        `Database: Schema migration with tenant_id isolation, soft deletes, and audit log.\n` +
-        `API: REST / Supabase endpoints with role-based access control (RBAC).\n` +
-        `UI/UX: Mobile-first responsive screens with Bengali Unicode font rendering.\n` +
-        `Edge Cases: Zero network, duplicate invoice payload, printer disconnect.\n` +
-        `Status: WAITING FOR USER APPROVAL.`;
+      const blueprint = AiBlueprintService.getInstance().generateBlueprint(root, featureGoal);
+      const doc = await vscode.workspace.openTextDocument(blueprint.filePath);
+      await vscode.window.showTextDocument(doc, { preview: false, viewColumn: vscode.ViewColumn.Beside });
 
       const choice = await vscode.window.showInformationMessage(
-        planSummary,
-        { modal: true },
-        'Approve Plan',
+        `📐 AI Architecture Blueprint generated at .antigravity/blueprints/${blueprint.slug}.md. Review specification.`,
+        'Approve Architecture Plan',
         'Reject / Revise'
       );
 
-      if (choice === 'Approve Plan') {
+      if (choice === 'Approve Architecture Plan') {
         vscode.commands.executeCommand('antigravityMaster.approvePlan');
-      } else {
+      } else if (choice === 'Reject / Revise') {
         vscode.commands.executeCommand('antigravityMaster.rejectPlan');
       }
+    })
+  );
+
+  // Command: purgeDeadCode
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.purgeDeadCode', async () => {
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
+      const confirm = await vscode.window.showWarningMessage(
+        'Safely purge lingering debug console.log statements and prune empty directories? An encrypted backup will be created automatically before execution.',
+        'Yes, Purge Dead Code',
+        'Cancel'
+      );
+
+      if (confirm === 'Yes, Purge Dead Code') {
+        const res = await DeadCodePurgerService.getInstance().purgeIssues(root, { removeConsoleLogs: true, removeEmptyDirs: true });
+        vscode.window.showInformationMessage(`🧹 Purged ${res.cleanedCount} dead code/directory items. Safety backup created: ${res.backupCreated ? 'Yes' : 'No'}.`);
+        await ModuleRegistry.getInstance().scanSingleModule(37);
+        dashboardProvider.render();
+        PillarTreeDataProvider.getInstance().refresh();
+      }
+    })
+  );
+
+  // Command: scanDeadAssets
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.scanDeadAssets', async () => {
+      const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!root) {
+        vscode.window.showWarningMessage('No open workspace found.');
+        return;
+      }
+
+      const audit = await DeadCodePurgerService.getInstance().auditWorkspace(root);
+      vscode.window.showInformationMessage(
+        `Asset & Dead Code Audit: Found ${audit.orphanAssets} unreferenced assets, ${audit.consoleLogs} lingering console.log calls, and ${audit.emptyDirectories} empty directories.`
+      );
     })
   );
 

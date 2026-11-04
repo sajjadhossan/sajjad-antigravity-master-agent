@@ -5,6 +5,7 @@ import { runBackupAndDependencyTests } from './backup-and-dependencies.test';
 import { runEditorProvidersTests } from './editor-providers.test';
 import { runParityGuardTests } from './parity-guard.test';
 import { runDevOpsAndTreeViewTests } from './devops-and-treeview.test';
+import { runAiAndCleanerTests } from './ai-and-cleaner.test';
 
 async function main() {
   console.log('====================================================');
@@ -19,6 +20,7 @@ async function main() {
     runEditorProvidersTests();
     await runParityGuardTests();
     await runDevOpsAndTreeViewTests();
+    await runAiAndCleanerTests();
     console.log('\n✅ ALL TEST SUITES PASSED SUCCESSFULLY (0 FAILURES).');
   } catch (err) {
     console.error('\n❌ TEST SUITE FAILURE:', err);
