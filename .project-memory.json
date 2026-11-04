@@ -1,0 +1,37 @@
+{
+  "projectType": "VS Code & Antigravity Master Agent Extension",
+  "techStack": [
+    "TypeScript",
+    "VS Code Extension API",
+    "Node.js",
+    "esbuild"
+  ],
+  "routes": [
+    "workbench.view.extension.antigravity-master-container",
+    "antigravityMaster.dashboardView"
+  ],
+  "models": [
+    "IModuleDefinition",
+    "IModuleScanResult",
+    "IReleaseGateReport",
+    "IProjectMemory",
+    "IModuleIssue"
+  ],
+  "databaseTables": [],
+  "businessRules": [
+    "Strict tenant isolation by tenant_id across all enterprise apps",
+    "Zero-demo and zero-regression policy",
+    "Asia/Dhaka timezone and BDT currency default",
+    "Soft delete for financial and sensitive records"
+  ],
+  "knownIssues": [],
+  "completedFeatures": [
+    "Activity Bar Command Center Dashboard",
+    "50 Unified Multi-Platform Guard Modules",
+    "Android Pre-flight Inspector & Signing Manager",
+    "Zero-Click Auto-Accept Dynamic Toggle",
+    "AI Project Memory Bank",
+    "Live Code Coverage & Unit Test Validator"
+  ],
+  "lastUpdated": "2026-11-04T10:10:00.000Z"
+}

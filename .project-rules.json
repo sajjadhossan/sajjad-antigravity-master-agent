@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "name": "Sajjad Antigravity Extension Project Rules",
+  "rules": [
+    {
+      "id": "RULE-PROJ-01",
+      "name": "Mandatory Audit Trail",
+      "category": "Architecture",
+      "severity": "HIGH",
+      "description": "Ensure audit logger is invoked on all mutation controllers.",
+      "pattern": "createRecord\\(|deleteRecord\\(",
+      "recommendation": "Call auditLogService.record(...) on all state mutations.",
+      "enabled": true
+    },
+    {
+      "id": "RULE-PROJ-02",
+      "name": "Zero Hardcoded Secrets",
+      "category": "Security",
+      "severity": "CRITICAL",
+      "description": "Never commit unmasked API tokens or private keys.",
+      "pattern": "(AIza[0-9A-Za-z-_]{35}|ghp_[0-9A-Za-z]{36})",
+      "recommendation": "Use environment variables or SecurityVault.",
+      "enabled": true
+    }
+  ]
+}

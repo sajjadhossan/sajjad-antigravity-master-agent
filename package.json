@@ -183,6 +183,16 @@
         "command": "antigravityMaster.exportDiagnosticReport",
         "title": "Antigravity: Export Redacted Diagnostic Report",
         "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.toggleAutoAccept",
+        "title": "Antigravity: Toggle Smart Auto-Accept Engine",
+        "category": "Antigravity Master"
+      },
+      {
+        "command": "antigravityMaster.initProjectMemory",
+        "title": "Antigravity: Initialize AI Project Memory (.project-memory.json)",
+        "category": "Antigravity Master"
       }
     ],
     "configuration": {

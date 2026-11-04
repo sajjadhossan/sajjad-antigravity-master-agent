@@ -207,6 +207,7 @@ export class Module4AndroidPreFlight implements IModuleDefinition {
         permissionsCount: report.detectedPermissions.length,
         signingStatus: report.signingStatus,
       },
+      degradationNote: report.hasManifest ? undefined : 'No AndroidManifest.xml found. Non-Android workspace or path not configured.',
     };
   }
 }
@@ -373,7 +374,7 @@ export class Module9ProjectMemory implements IModuleDefinition {
         moduleNumber: 9,
         message: 'Project Memory (.project-memory.json) is not initialized.',
         severity: 'LOW',
-        remediation: 'Run initialization to allow AI to remember stack, tables, and completed modules.',
+        remediation: 'Run initialization (Antigravity: Initialize AI Project Memory) to activate project memory bank.',
       });
     }
 
@@ -383,6 +384,7 @@ export class Module9ProjectMemory implements IModuleDefinition {
       status: hasMemory ? ModuleStatus.WORKING : ModuleStatus.WAITING,
       lastChecked: new Date(),
       issues,
+      degradationNote: hasMemory ? undefined : 'Memory bank waiting for .project-memory.json initialization.',
     };
   }
 }
@@ -812,9 +814,28 @@ export class Module25CodeCoverageValidator implements IModuleDefinition {
   async executeScan(workspaceRoot?: string): Promise<IModuleScanResult> {
     let hasTests = false;
     if (workspaceRoot) {
-      const testDir = path.join(workspaceRoot, 'test');
-      const testsDir = path.join(workspaceRoot, 'src', 'tests');
-      hasTests = fs.existsSync(testDir) || fs.existsSync(testsDir);
+      const candidatePaths = [
+        path.join(workspaceRoot, 'test'),
+        path.join(workspaceRoot, 'tests'),
+        path.join(workspaceRoot, 'src', 'test'),
+        path.join(workspaceRoot, 'src', 'tests'),
+        path.join(workspaceRoot, '__tests__'),
+        path.join(workspaceRoot, 'spec'),
+      ];
+      hasTests = candidatePaths.some(p => fs.existsSync(p));
+
+      // Also check package.json for test script
+      if (!hasTests) {
+        const pkgPath = path.join(workspaceRoot, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+          try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            if (pkg.scripts && pkg.scripts.test && !pkg.scripts.test.includes('no test specified')) {
+              hasTests = true;
+            }
+          } catch (e) {}
+        }
+      }
     }
 
     return {
@@ -822,8 +843,15 @@ export class Module25CodeCoverageValidator implements IModuleDefinition {
       moduleName: this.name,
       status: hasTests ? ModuleStatus.WORKING : ModuleStatus.WAITING,
       lastChecked: new Date(),
-      issues: [],
+      issues: hasTests ? [] : [{
+        id: 'MOD25-NO-TESTS',
+        moduleNumber: 25,
+        message: 'No test suite detected in common test directories (test, tests, src/tests) or npm test script.',
+        severity: 'LOW',
+        remediation: 'Add unit tests to verify application reliability.',
+      }],
       metrics: { testSuiteDetected: hasTests, coverageEstimate: hasTests ? '82%' : '0%' },
+      degradationNote: hasTests ? undefined : 'Test suite waiting for test directory or test script.',
     };
   }
 }

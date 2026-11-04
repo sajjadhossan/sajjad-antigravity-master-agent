@@ -42,6 +42,10 @@ export class AndroidPreflightService {
       }
     }
 
+    const isAndroidOrFlutterWorkspace = !!manifestPath ||
+      fs.existsSync(path.join(workspaceRoot, 'android')) ||
+      fs.existsSync(path.join(workspaceRoot, 'pubspec.yaml'));
+
     const detectedPermissions: string[] = [];
     const missingPermissions: string[] = [];
 
@@ -65,14 +69,14 @@ export class AndroidPreflightService {
           remediation: 'Add android.permission.INTERNET to AndroidManifest.xml before network API calls.',
         });
       }
-    } else {
-      // Graceful report if not an Android/Flutter project
+    } else if (isAndroidOrFlutterWorkspace) {
+      // Android project detected but manifest not found in standard locations
       issues.push({
         id: 'APK-NO-MANIFEST',
         moduleNumber: 4,
-        message: 'No AndroidManifest.xml found in workspace. Non-Android or root not configured.',
-        severity: 'LOW',
-        remediation: 'Configure Android path if targeting Android APK builds.',
+        message: 'AndroidManifest.xml not found in default locations. Configure custom android path if necessary.',
+        severity: 'MEDIUM',
+        remediation: 'Configure antigravityMaster.android.manifestPath in settings.',
       });
     }
 
@@ -81,18 +85,36 @@ export class AndroidPreflightService {
     const gitignorePath = path.join(workspaceRoot, '.gitignore');
     if (fs.existsSync(gitignorePath)) {
       const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
-      const requiredIgnore = ['.env', 'key.properties', '*.jks', '*.keystore', 'google-services.json'];
-      for (const req of requiredIgnore) {
-        if (!gitignoreContent.includes(req.replace('*', ''))) {
-          gitignoreIssues.push(req);
-          issues.push({
-            id: `APK-GITIGNORE-${req}`,
-            moduleNumber: 4,
-            message: `Sensitive credential file '${req}' is not covered by .gitignore!`,
-            filePath: gitignorePath,
-            severity: 'CRITICAL',
-            remediation: `Append '${req}' to your root .gitignore immediately to prevent credential leaks.`,
-          });
+      const sensitivePatterns = ['.env', 'key.properties', '*.jks', '*.keystore', 'google-services.json'];
+      for (const req of sensitivePatterns) {
+        const cleanReq = req.replace('*', '');
+        const isCovered = gitignoreContent.includes(cleanReq);
+        if (!isCovered) {
+          // Check if sensitive file actually exists on disk in workspace unignored
+          const fileExistsLocally = fs.existsSync(path.join(workspaceRoot, cleanReq)) ||
+            (isAndroidOrFlutterWorkspace && fs.existsSync(path.join(workspaceRoot, 'android', cleanReq)));
+
+          if (fileExistsLocally) {
+            gitignoreIssues.push(req);
+            issues.push({
+              id: `APK-GITIGNORE-${req}`,
+              moduleNumber: 4,
+              message: `Active sensitive credential file '${req}' exists in project but is NOT covered by .gitignore!`,
+              filePath: gitignorePath,
+              severity: 'CRITICAL',
+              remediation: `Append '${req}' to your root .gitignore immediately to prevent credential leaks.`,
+            });
+          } else if (isAndroidOrFlutterWorkspace && (req === 'key.properties' || req === '*.jks' || req === '*.keystore')) {
+            gitignoreIssues.push(req);
+            issues.push({
+              id: `APK-GITIGNORE-REC-${req}`,
+              moduleNumber: 4,
+              message: `Android credential pattern '${req}' is recommended in .gitignore for release safety.`,
+              filePath: gitignorePath,
+              severity: 'LOW',
+              remediation: `Add '${req}' to .gitignore before creating signing keys.`,
+            });
+          }
         }
       }
     }
@@ -115,6 +137,8 @@ export class AndroidPreflightService {
           remediation: 'Ensure keyAlias, keyPassword, storeFile, and storePassword are provided via environment or secure vault.',
         });
       }
+    } else if (isAndroidOrFlutterWorkspace) {
+      signingStatus = 'MISSING';
     }
 
     // Proguard check

@@ -51,7 +51,27 @@ export function activate(context: vscode.ExtensionContext) {
         diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
       );
       if (activeErrors) {
-        statusBar.updateStatus(false, RulesEngine.getInstance().getActiveRules().length, true, true, true, true, 'Waiting');
+        const config = vscode.workspace.getConfiguration('antigravityMaster');
+        const autoAccept = config.get<boolean>('autoAccept.enabled', false);
+        statusBar.updateStatus(autoAccept, RulesEngine.getInstance().getActiveRules().length, true, true, true, true, 'Waiting');
+      }
+    })
+  );
+
+  // 6. Configuration change listener for dynamic reactive updates
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(async (e) => {
+      if (e.affectsConfiguration('antigravityMaster')) {
+        await ModuleRegistry.getInstance().scanSingleModule(1);
+        dashboardProvider.render();
+        const lastReport = ReleaseGateService.getInstance().getLastReport();
+        if (lastReport) {
+          statusBar.updateFromReport(lastReport);
+        } else {
+          const config = vscode.workspace.getConfiguration('antigravityMaster');
+          const autoAccept = config.get<boolean>('autoAccept.enabled', false);
+          statusBar.updateStatus(autoAccept, RulesEngine.getInstance().getActiveRules().length, true, true, true, false, 'Approved');
+        }
       }
     })
   );
@@ -374,6 +394,43 @@ function registerExtensionCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('antigravityMaster.rollbackRelease', async () => {
       vscode.window.showWarningMessage('Rollback Center: Select target previous stable release artifact from history.');
+    })
+  );
+
+  // Command: toggleAutoAccept
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.toggleAutoAccept', async () => {
+      const config = vscode.workspace.getConfiguration('antigravityMaster');
+      const current = config.get<boolean>('autoAccept.enabled', false);
+      const next = !current;
+      await config.update('autoAccept.enabled', next, vscode.ConfigurationTarget.Global);
+      vscode.window.showInformationMessage(`Zero-Click Auto-Accept Engine is now ${next ? 'ON (Activated)' : 'OFF (Safe Mode)'}.`);
+      await ModuleRegistry.getInstance().scanSingleModule(1);
+      dashboardProvider.render();
+      const lastReport = ReleaseGateService.getInstance().getLastReport();
+      if (lastReport) {
+        statusBar.updateFromReport(lastReport);
+      }
+    })
+  );
+
+  // Command: initProjectMemory
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravityMaster.initProjectMemory', async () => {
+      try {
+        const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!root) {
+          vscode.window.showWarningMessage('No open workspace found to initialize project memory.');
+          return;
+        }
+        const defaultMemory = await ProjectMemoryManager.getInstance().loadMemory();
+        await ProjectMemoryManager.getInstance().saveMemory(defaultMemory);
+        vscode.window.showInformationMessage('✅ .project-memory.json initialized successfully.');
+        await ModuleRegistry.getInstance().scanSingleModule(9);
+        dashboardProvider.render();
+      } catch (err: any) {
+        vscode.window.showErrorMessage(`Failed to initialize .project-memory.json: ${err.message || String(err)}`);
+      }
     })
   );
 

@@ -25,14 +25,16 @@ export class StatusBarManager {
 
   private initItems(): void {
     this.releaseGateItem.command = 'antigravityMaster.forceVerifyAndPrepareRelease';
-    this.autoAcceptItem.command = 'antigravityMaster.openDashboard';
+    this.autoAcceptItem.command = 'antigravityMaster.toggleAutoAccept';
     this.rulesItem.command = 'antigravityMaster.manageRules';
     this.syncItem.command = 'antigravityMaster.openDashboard';
     this.backupItem.command = 'antigravityMaster.runBackupTest';
     this.qrItem.command = 'antigravityMaster.generateApkQr';
     this.aiPlanItem.command = 'antigravityMaster.runAiPlanner';
 
-    this.updateStatus(false, 5, true, true, true, false, 'Approved');
+    const config = vscode.workspace.getConfiguration('antigravityMaster');
+    const autoAccept = config.get<boolean>('autoAccept.enabled', false);
+    this.updateStatus(autoAccept, 5, true, true, true, false, 'Approved');
   }
 
   public updateStatus(
@@ -88,8 +90,10 @@ export class StatusBarManager {
   }
 
   public updateFromReport(report: IReleaseGateReport): void {
+    const config = vscode.workspace.getConfiguration('antigravityMaster');
+    const autoAccept = config.get<boolean>('autoAccept.enabled', false);
     this.updateStatus(
-      false,
+      autoAccept,
       5,
       true,
       true,
