@@ -10,6 +10,31 @@
 
 ---
 
+## 🌟 Key Capabilities
+
+- **🏛️ 5 Enterprise Pillars & Live Health Meter (0–100%)**:
+  Structured compliance governance across Security, DevOps, Code Quality, Data Safety, and Architecture.
+- **📂 Native 5-Pillar Sidebar Tree View**:
+  Glanceable live status indicators (`pass-filled`, `warning`, `error`, `clock`) and 1-click Quick Actions directly in the VS Code Activity Bar.
+- **🖥️ Executive 4-Tab Command Center Webview**:
+  Responsive dashboard with circular SVG compliance meter, 50-module accordion view, real-time DevOps runner, and industry rule templates.
+- **✨ 1-Click Auto-Heal Engine**:
+  Instantly repairs missing workspace configurations, memory banks, security rules, and CI/CD pipelines.
+- **💡 Lightbulb Quick-Fix Code Actions (`Ctrl+.`)**:
+  Inline one-click fixes for `.gitignore` secrets, `.project-memory.json`, unpinned dependencies, empty button handlers, and `tenant_id` queries.
+- **🔍 Cross-Platform Schema & DTO Parity Guard**:
+  Real AST contract validation ensuring parity across Prisma (`schema.prisma`), SQL DDL, Dart models, and TypeScript interfaces.
+- **💾 Real Zero-Demo Backup & Restore Service**:
+  GZIP compression, SHA-256 checksum verification, and simulated database restore tests.
+- **📱 Android APK Pre-Flight & QR Delivery**:
+  Live AndroidManifest scanner, keystore signing validator, and dynamic APK download QR code viewer.
+- **🚀 Production-Ready CI/CD Workflow Generator**:
+  Generates production-grade GitHub Actions workflows for Android release packaging, Vercel deployments, desktop builds (Windows/macOS), and on-demand dispatches.
+- **🌐 Bilingual Support**:
+  Full English and Bengali (বাংলা) support across the entire interface.
+
+---
+
 ## 📦 Installation
 
 ### From VSIX Package:
@@ -17,17 +42,19 @@
 code --install-extension ./sajjad-antigravity-master-agent-8.0.0.vsix
 ```
 
-### From GitHub Releases:
-Download the latest `sajjad-antigravity-master-agent-8.0.0.vsix` and its `.sha256` checksum from [Releases](https://github.com/sajjadhossan/sajjad-antigravity-master-agent/releases).
+### Verification:
+```powershell
+Get-FileHash -Algorithm SHA256 .\sajjad-antigravity-master-agent-8.0.0.vsix
+```
 
 ---
 
 ## 🛠️ Quick Start
 
-1. Open any workspace in VS Code or Antigravity IDE.
-2. Click the **Antigravity Master** shield icon in the Activity Bar.
-3. Click **"🛡️ Force-Verify 1–50 & Prepare Release"** to run full diagnostic sweeps across all 50 modules.
-4. Review findings in the interactive dashboard table.
+1. Open your workspace in VS Code or Antigravity IDE.
+2. Click the **Sajjad Antigravity Master** shield icon in the Activity Bar.
+3. Browse the **5 Pillars** in the sidebar or click **"✨ 1-Click Auto-Heal Workspace"**.
+4. Open the **Command Center Dashboard** for deep interactive controls, APK QR codes, and rules management.
 
 ---
 
@@ -37,4 +64,5 @@ Download the latest `sajjad-antigravity-master-agent-8.0.0.vsix` and its `.sha25
 - [Rules Engine & Templates](docs/RULES.md)
 - [Enterprise Security](docs/SECURITY.md)
 - [Release & CI/CD Pipeline](docs/RELEASE.md)
-- [বাংলা ইউজার গাইড](docs/USER_GUIDE_BN.md)
+- [বাংলা ইউজার গাইড (User Guide in Bengali)](docs/USER_GUIDE_BN.md)
+- [Changelog](CHANGELOG.md)
